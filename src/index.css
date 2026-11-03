@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Roboto', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background-color: #F8FAFD;
+    color: #1F1F1F;
+  }
+}
+
+/* Material Design scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #F0F4F9;
+}
+::-webkit-scrollbar-thumb {
+  background: #C4C7C5;
+  border-radius: 9999px;
+  border: 2px solid #F0F4F9;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #8E918F;
+}
+
+/* Print optimizations */
+@media print {
+  @page {
+    margin: 8mm;
+    size: A4 portrait;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .print-container {
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .page-break-inside-avoid {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+
+@media screen {
+  .print-only {
+    display: none !important;
+  }
+}

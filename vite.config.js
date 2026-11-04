@@ -11,6 +11,17 @@ export default defineConfig({
         changeOrigin: true
       }
     }
+  },
+  build: {
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'pdf-vendor': ['jspdf', 'html2canvas'],
+          'react-vendor': ['react', 'react-dom'],
+          'icons': ['lucide-react']
+        }
+      }
+    }
   }
 });
-

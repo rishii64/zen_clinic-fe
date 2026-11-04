@@ -44,6 +44,7 @@ export const api = {
     const q = new URLSearchParams(params).toString();
     return request(`/tests?${q}`);
   },
+  syncTariff: () => request('/tests/sync-tariff', { method: 'POST' }),
   getTestById: (id) => request(`/tests/${id}`),
   createTest: (test) => request('/tests', { method: 'POST', body: JSON.stringify(test) }),
   updateTest: (id, test) => request(`/tests/${id}`, { method: 'PUT', body: JSON.stringify(test) }),
@@ -76,4 +77,3 @@ export const api = {
   getConfig: () => request('/config'),
   updateConfig: (config) => request('/config', { method: 'PUT', body: JSON.stringify(config) })
 };
-

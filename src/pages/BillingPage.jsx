@@ -6,23 +6,16 @@ import {
   PlusCircle,
   Search,
   Printer,
-  CreditCard,
-  QrCode,
-  CheckCircle,
-  AlertCircle,
-  X,
-  Sparkles,
-  ChevronRight,
-  Percent,
   Check,
-  FileText
+  X,
+  Loader2
 } from 'lucide-react';
 import PrintModal from '../components/PrintModal';
 import InvoiceTemplate from '../components/InvoiceTemplate';
 import ModalPortal from '../components/ModalPortal';
 
 export default function BillingPage({ preselectedPatient, onGoToReports }) {
-  const { clinicConfig, user } = useAuth();
+  const { clinicConfig } = useAuth();
   const [bills, setBills] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -59,7 +52,6 @@ export default function BillingPage({ preselectedPatient, onGoToReports }) {
   const [paymentAmount, setPaymentAmount] = useState('');
   const [payMode, setPayMode] = useState('UPI');
   const [payTxnId, setPayTxnId] = useState('');
-  const [payNote, setPayNote] = useState('');
   const [recordingPayment, setRecordingPayment] = useState(false);
 
   // Print Invoice Modal State
@@ -104,7 +96,7 @@ export default function BillingPage({ preselectedPatient, onGoToReports }) {
     }
   };
 
-  // Live Calculations for Create Bill Form
+  // Calculations for Create Bill Form
   const selectedTests = testsList.filter(t => selectedTestIds.includes(t._id));
   const subtotal = selectedTests.reduce((acc, t) => acc + (t.price || 0), 0);
 
@@ -195,8 +187,7 @@ export default function BillingPage({ preselectedPatient, onGoToReports }) {
       const res = await api.addPayment(paymentModalBill._id, {
         amount: Number(paymentAmount),
         mode: payMode,
-        transactionId: payTxnId,
-        note: payNote
+        transactionId: payTxnId
       });
       if (res.success) {
         setPaymentModalBill(null);
@@ -221,25 +212,23 @@ export default function BillingPage({ preselectedPatient, onGoToReports }) {
     <div className="space-y-6">
 
       {/* Top Header Card */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-[#E0E2EC] shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-card">
         <div>
-          <h1 className="text-xl font-extrabold text-[#1F1F1F] tracking-tight flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#D3E3FD] text-[#0B57D0] flex items-center justify-center">
+          <h1 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
               <Receipt className="w-4 h-4" />
             </div>
-            <span>Diagnostic Billing & Invoices</span>
+            <span>Diagnostic Invoices & Billing</span>
           </h1>
-          <p className="text-xs text-[#74777F] mt-1">
-            Prescription test ordering, automated rate lookups, GST & Non-GST modes, payment tracking.
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Investigation order entry, automatic tariff lookup, GST compliance, and payment settlement.
           </p>
         </div>
 
         <div className="flex items-center space-x-3">
           <button
-            onClick={() => {
-              setShowCreateModal(true);
-            }}
-            className="bg-[#0B57D0] hover:bg-[#0842A0] text-white font-bold text-xs px-5 py-2.5 rounded-full shadow-sm flex items-center space-x-2 transition"
+            onClick={() => setShowCreateModal(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs px-4 py-2 rounded-xl shadow-xs flex items-center space-x-1.5 transition shrink-0"
           >
             <PlusCircle className="w-4 h-4" />
             <span>Generate New Bill</span>
@@ -248,61 +237,62 @@ export default function BillingPage({ preselectedPatient, onGoToReports }) {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-3xl border border-[#E0E2EC] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+      <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-card flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
 
-        {/* Material Status Filter Chips */}
-        <div className="flex items-center space-x-2 overflow-x-auto pb-1 md:pb-0">
-          <span className="font-bold text-[#74777F] uppercase text-[11px] mr-1">Status:</span>
+        {/* Status Filter Chips */}
+        <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 md:pb-0">
+          <span className="font-semibold text-slate-400 dark:text-slate-500 uppercase text-[10px] mr-1">Status:</span>
           {['All', 'Paid', 'Partially Paid', 'Unpaid'].map((st) => (
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
-              className={`px-3.5 py-1.5 rounded-full font-bold transition text-xs ${statusFilter === st
-                ? 'bg-[#C2E7FF] text-[#001D35] border border-[#7FCFFF] shadow-xs'
-                : 'bg-[#F0F4F9] text-[#444746] hover:bg-[#E3E8EF]'
-                }`}
+              className={`px-3 py-1 rounded-xl font-medium transition text-xs whitespace-nowrap ${
+                statusFilter === st
+                  ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-900/40 font-semibold'
+                  : 'bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-200/70 dark:hover:bg-slate-700/60'
+              }`}
             >
               {st}
             </button>
           ))}
         </div>
 
-        {/* Search */}
+        {/* Search Input */}
         <div className="relative">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#74777F]" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
           <input
             type="text"
             placeholder="Search invoice #, patient, phone..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 pr-4 py-2 bg-[#F0F4F9] border border-[#E0E2EC] rounded-full w-72 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0] font-medium"
+            className="pl-9 pr-4 py-1.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 rounded-xl text-xs w-full md:w-64 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white placeholder:text-slate-400"
           />
         </div>
       </div>
 
       {/* Invoices List Table */}
-      <div className="bg-white rounded-3xl border border-[#E0E2EC] shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs whitespace-nowrap">
-            <thead className="bg-[#F8FAFD] border-b border-[#E0E2EC] text-[#444746] font-bold uppercase tracking-wider text-[11px] whitespace-nowrap">
+            <thead className="bg-slate-50/70 dark:bg-slate-800/40 border-b border-slate-200/80 dark:border-slate-800 text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider text-[11px]">
               <tr>
-                <th className="py-4 px-6 whitespace-nowrap">Invoice #</th>
-                <th className="py-4 px-6 whitespace-nowrap">Patient Name & ID</th>
-                <th className="py-4 px-6 whitespace-nowrap">Tests Ordered</th>
-                <th className="py-4 px-6 whitespace-nowrap">Billing Mode</th>
-                <th className="py-4 px-6 text-right whitespace-nowrap">Grand Total</th>
-                <th className="py-4 px-6 text-right whitespace-nowrap">Paid</th>
-                <th className="py-4 px-6 text-right whitespace-nowrap">Due Balance</th>
-                <th className="py-4 px-6 text-center whitespace-nowrap">Payment Status</th>
-                <th className="py-4 px-6 text-right whitespace-nowrap">Actions</th>
+                <th className="py-3.5 px-5">Invoice #</th>
+                <th className="py-3.5 px-5">Patient & ID</th>
+                <th className="py-3.5 px-5">Investigations</th>
+                <th className="py-3.5 px-5">Billing Mode</th>
+                <th className="py-3.5 px-5 text-right">Total</th>
+                <th className="py-3.5 px-5 text-right">Paid</th>
+                <th className="py-3.5 px-5 text-right">Due</th>
+                <th className="py-3.5 px-5 text-center">Status</th>
+                <th className="py-3.5 px-5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#F0F4F9] whitespace-nowrap">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
               {loading ? (
                 <tr>
-                  <td colSpan="9" className="py-12 text-center text-[#74777F] whitespace-nowrap">
+                  <td colSpan="9" className="py-12 text-center text-slate-400 dark:text-slate-500">
                     <div className="flex justify-center items-center space-x-2">
-                      <div className="w-5 h-5 border-2 border-[#0B57D0] border-t-transparent rounded-full animate-spin" />
+                      <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
                       <span>Loading invoices...</span>
                     </div>
                   </td>
@@ -312,71 +302,75 @@ export default function BillingPage({ preselectedPatient, onGoToReports }) {
                   const isPaid = bill.paymentStatus === 'Paid';
                   const isPartial = bill.paymentStatus === 'Partially Paid';
                   return (
-                    <tr key={bill._id} className="hover:bg-[#F8FAFD] transition">
-                      <td className="py-4 px-6 font-mono font-bold text-[#0B57D0] whitespace-nowrap">
-                        <span className="inline-block bg-[#E8F0FE] px-2.5 py-1 rounded-full border border-[#D2E3FC] whitespace-nowrap">
+                    <tr key={bill._id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition">
+                      <td className="py-3.5 px-5 font-mono font-semibold text-blue-600 dark:text-blue-400">
+                        <span className="inline-block bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-md border border-blue-100 dark:border-blue-900/40">
                           {bill.invoiceNumber}
                         </span>
                       </td>
-                      <td className="py-4 px-6 whitespace-nowrap">
-                        <div className="font-bold text-[#1F1F1F] text-sm whitespace-nowrap">{bill.patientSnapshot?.name}</div>
-                        <div className="text-[11px] text-[#74777F] font-mono whitespace-nowrap mt-0.5">
+                      <td className="py-3.5 px-5">
+                        <div className="font-semibold text-slate-900 dark:text-slate-100 text-xs sm:text-sm">{bill.patientSnapshot?.name}</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
                           {bill.patientSnapshot?.patientId} • {bill.patientSnapshot?.phone}
                         </div>
                       </td>
-                      <td className="py-4 px-6 whitespace-nowrap">
-                        <div className="text-[#1F1F1F] font-medium whitespace-nowrap" title={bill.items?.map(i => i.testName).join(', ')}>
+                      <td className="py-3.5 px-5 max-w-xs truncate">
+                        <div className="text-slate-800 dark:text-slate-200 font-medium truncate" title={bill.items?.map(i => i.testName).join(', ')}>
                           {bill.items?.map(i => i.testName).join(', ')}
                         </div>
-                        <div className="text-[10px] text-[#74777F] whitespace-nowrap mt-0.5">
-                          {bill.items?.length || 0} item(s) • Ref: {bill.referringDoctor}
+                        <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
+                          {bill.items?.length || 0} item(s) • Ref: {bill.referringDoctor || 'Attending Physician'}
                         </div>
                       </td>
-                      <td className="py-4 px-6 whitespace-nowrap">
-                        <span className={`inline-block text-[10px] font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap ${bill.isGstBill ? 'bg-[#E8DEF8] text-[#4A4458] border border-[#CAC4D0]' : 'bg-[#F0F4F9] text-[#444746] border border-[#E0E2EC]'
-                          }`}>
+                      <td className="py-3.5 px-5">
+                        <span className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-md ${
+                          bill.isGstBill
+                            ? 'bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-900/50'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                        }`}>
                           {bill.isGstBill ? `GST (${bill.gstRate}%)` : 'Non-GST'}
                         </span>
                       </td>
-                      <td className="py-4 px-6 text-right font-mono font-bold text-[#1F1F1F] text-sm whitespace-nowrap">
+                      <td className="py-3.5 px-5 text-right font-mono font-bold text-slate-900 dark:text-white">
                         ₹{Number(bill.grandTotal).toFixed(2)}
                       </td>
-                      <td className="py-4 px-6 text-right font-mono font-semibold text-[#0D652D] whitespace-nowrap">
+                      <td className="py-3.5 px-5 text-right font-mono font-semibold text-emerald-600 dark:text-emerald-400">
                         ₹{Number(bill.paidAmount).toFixed(2)}
                       </td>
-                      <td className="py-4 px-6 text-right font-mono font-bold text-[#BA1A1A] whitespace-nowrap">
+                      <td className="py-3.5 px-5 text-right font-mono font-bold text-rose-600 dark:text-rose-400">
                         ₹{Number(bill.dueAmount).toFixed(2)}
                       </td>
-                      <td className="py-4 px-6 text-center whitespace-nowrap">
-                        <span className={`inline-block text-[11px] font-bold px-3 py-1 rounded-full whitespace-nowrap ${isPaid
-                          ? 'bg-[#CEEAD6] text-[#0D652D]'
-                          : isPartial
-                            ? 'bg-[#FFE082] text-[#8C4A00]'
-                            : 'bg-[#FFDAD6] text-[#93000A]'
-                          }`}>
+                      <td className="py-3.5 px-5 text-center">
+                        <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                          isPaid
+                            ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                            : isPartial
+                            ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                            : 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                        }`}>
                           {bill.paymentStatus}
                         </span>
                       </td>
-                      <td className="py-4 px-6 text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end space-x-2 whitespace-nowrap">
+                      <td className="py-3.5 px-5 text-right">
+                        <div className="flex items-center justify-end space-x-2">
                           {bill.dueAmount > 0 && (
                             <button
                               onClick={() => {
                                 setPaymentModalBill(bill);
                                 setPaymentAmount(bill.dueAmount);
                               }}
-                              className="bg-[#CEEAD6] hover:bg-[#A8DAB5] text-[#0D652D] font-bold px-3.5 py-1.5 rounded-full text-xs transition whitespace-nowrap shrink-0"
-                              title="Record cash or UPI payment"
+                              className="bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-semibold px-2.5 py-1 rounded-lg text-xs transition"
+                              title="Record payment"
                             >
                               + Pay
                             </button>
                           )}
                           <button
                             onClick={() => setPrintBill(bill)}
-                            className="bg-[#F0F4F9] hover:bg-[#E3E8EF] text-[#444746] hover:text-[#0B57D0] font-bold p-2 rounded-full transition shrink-0"
-                            title="Print tax-compliant receipt / invoice"
+                            className="p-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg transition"
+                            title="Print tax-compliant receipt"
                           >
-                            <Printer className="w-4 h-4 shrink-0" />
+                            <Printer className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </td>
@@ -385,7 +379,7 @@ export default function BillingPage({ preselectedPatient, onGoToReports }) {
                 })
               ) : (
                 <tr>
-                  <td colSpan="9" className="py-12 text-center text-[#74777F] whitespace-nowrap">
+                  <td colSpan="9" className="py-12 text-center text-slate-400 dark:text-slate-500">
                     No diagnostic bills found. Click "Generate New Bill" to create one.
                   </td>
                 </tr>
@@ -395,57 +389,57 @@ export default function BillingPage({ preselectedPatient, onGoToReports }) {
         </div>
       </div>
 
-      {/* GENERATE NEW BILL MODAL (Material Light Theme) */}
+      {/* GENERATE NEW BILL MODAL */}
       {showCreateModal && (
         <ModalPortal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)}>
           <div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-[#001D35]/40 backdrop-blur-sm p-4 overflow-y-auto"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto"
             onClick={(e) => {
               if (e.target === e.currentTarget) setShowCreateModal(false);
             }}
           >
-            <div className="bg-white rounded-3xl shadow-m3-4 max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-[#E0E2EC] my-auto">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800 my-auto">
 
               {/* Modal Header */}
-              <div className="px-6 py-4 bg-[#F8FAFD] border-b border-[#E0E2EC] flex items-center justify-between text-[#1F1F1F]">
-                <div className="flex items-center space-x-3">
-                  <div className="w-9 h-9 rounded-2xl bg-[#D3E3FD] text-[#0B57D0] flex items-center justify-center">
-                    <Receipt className="w-5 h-5" />
+              <div className="px-5 py-3.5 bg-slate-50 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                    <Receipt className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-base text-[#1F1F1F]">Generate Test-Based Diagnostic Invoice</h3>
-                    <p className="text-xs text-[#74777F]">
-                      Select patient, pick investigations with standard tariff rates, apply GST/discount, and record receipt.
+                    <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white">Generate Diagnostic Invoice</h3>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Select patient, pick tests, set GST/discount, and record receipt.
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowCreateModal(false)}
-                  className="p-1.5 rounded-full text-[#444746] hover:bg-[#E9EEF6]"
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <form onSubmit={handleCreateBillSubmit} className="flex-1 overflow-y-auto p-6 space-y-6 text-xs">
+              <form onSubmit={handleCreateBillSubmit} className="flex-1 overflow-y-auto p-5 space-y-5 text-xs">
 
                 {createError && (
-                  <div className="p-3 bg-[#FFDAD6] text-[#93000A] border border-[#FFB4AB] rounded-2xl font-medium">
+                  <div className="p-3 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 rounded-xl font-medium">
                     {createError}
                   </div>
                 )}
 
                 {/* 1. Patient & Doctor Selection */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-[#F0F4F9] p-4 rounded-2xl border border-[#E0E2EC]">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-xl border border-slate-200/80 dark:border-slate-800">
                   <div>
-                    <label className="block font-bold text-[#444746] mb-1">
-                      Select Registered Patient <span className="text-[#BA1A1A]">*</span>
+                    <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">
+                      Select Patient <span className="text-rose-600">*</span>
                     </label>
                     <select
                       required
                       value={selectedPatientId}
                       onChange={(e) => setSelectedPatientId(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-white border border-[#C4C7C5] rounded-2xl focus:border-[#0B57D0] focus:ring-1 focus:ring-[#0B57D0] font-medium"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white font-medium"
                     >
                       <option value="">-- Choose Patient --</option>
                       {patientsList.map((p) => (
@@ -457,23 +451,23 @@ export default function BillingPage({ preselectedPatient, onGoToReports }) {
                   </div>
 
                   <div>
-                    <label className="block font-bold text-[#444746] mb-1">Referring Doctor / Consultant</label>
+                    <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">Referring Doctor</label>
                     <input
                       type="text"
                       value={referringDoctor}
                       onChange={(e) => setReferringDoctor(e.target.value)}
                       placeholder="e.g. Dr. R.K. MANDAL"
-                      className="w-full px-3.5 py-2.5 bg-white border border-[#C4C7C5] rounded-2xl focus:border-[#0B57D0] focus:ring-1 focus:ring-[#0B57D0] font-medium"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white font-medium"
                     />
                   </div>
                 </div>
 
                 {/* 2. Diagnostic Test Selection Catalog */}
                 <div>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
-                    <label className="font-bold text-[#1F1F1F] text-sm flex items-center space-x-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                    <label className="font-semibold text-slate-900 dark:text-white text-xs flex items-center space-x-2">
                       <span>Select Investigations</span>
-                      <span className="bg-[#C2E7FF] text-[#001D35] px-2.5 py-0.5 rounded-full font-bold text-[10px]">
+                      <span className="bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-md font-semibold text-[10px]">
                         {selectedTestIds.length} Selected
                       </span>
                     </label>
@@ -483,7 +477,7 @@ export default function BillingPage({ preselectedPatient, onGoToReports }) {
                       <select
                         value={testCategoryFilter}
                         onChange={(e) => setTestCategoryFilter(e.target.value)}
-                        className="px-3 py-1.5 bg-[#F0F4F9] border border-[#E0E2EC] rounded-full text-xs font-medium"
+                        className="px-2.5 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-700 dark:text-slate-300"
                       >
                         <option value="All">All Categories</option>
                         <option value="Hematology">Hematology</option>
@@ -503,35 +497,36 @@ export default function BillingPage({ preselectedPatient, onGoToReports }) {
                         placeholder="Search test..."
                         value={testSearch}
                         onChange={(e) => setTestSearch(e.target.value)}
-                        className="px-3 py-1.5 bg-[#F0F4F9] border border-[#E0E2EC] rounded-full text-xs w-36"
+                        className="px-2.5 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs w-32 text-slate-900 dark:text-white placeholder:text-slate-400"
                       />
                     </div>
                   </div>
 
                   {/* Test Selection Grid */}
-                  <div className="border border-[#E0E2EC] rounded-2xl max-h-56 overflow-y-auto p-2.5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 bg-[#F8FAFD]">
+                  <div className="border border-slate-200 dark:border-slate-800 rounded-xl max-h-52 overflow-y-auto p-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 bg-slate-50/50 dark:bg-slate-950/40">
                     {filteredModalTests.map((t) => {
                       const isSelected = selectedTestIds.includes(t._id);
                       return (
                         <div
                           key={t._id}
                           onClick={() => handleToggleTest(t._id)}
-                          className={`p-3 rounded-2xl border cursor-pointer transition flex items-center justify-between select-none ${isSelected
-                            ? 'bg-[#E8F0FE] border-2 border-[#0B57D0] text-[#001D35] shadow-xs'
-                            : 'bg-white hover:bg-[#F0F4F9] border-[#E0E2EC] text-[#1F1F1F]'
-                            }`}
+                          className={`p-2.5 rounded-xl border cursor-pointer transition flex items-center justify-between select-none ${
+                            isSelected
+                              ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-500 text-blue-900 dark:text-blue-100 shadow-xs'
+                              : 'bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-700/60 border-slate-200/80 dark:border-slate-700/80 text-slate-800 dark:text-slate-200'
+                          }`}
                         >
                           <div className="truncate pr-2">
-                            <div className="font-bold text-xs truncate">{t.name}</div>
-                            <div className={`text-[10px] truncate ${isSelected ? 'text-[#0B57D0]' : 'text-[#74777F]'}`}>
+                            <div className="font-semibold text-xs truncate">{t.name}</div>
+                            <div className={`text-[10px] truncate ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`}>
                               {t.code} • {t.category}
                             </div>
                           </div>
                           <div className="text-right shrink-0">
-                            <div className={`font-mono font-bold ${isSelected ? 'text-[#0B57D0]' : 'text-[#1F1F1F]'}`}>
+                            <div className={`font-mono font-bold ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-slate-900 dark:text-white'}`}>
                               ₹{t.price}
                             </div>
-                            {isSelected && <Check className="w-3.5 h-3.5 inline text-[#0B57D0]" />}
+                            {isSelected && <Check className="w-3 h-3 inline text-blue-600 dark:text-blue-400" />}
                           </div>
                         </div>
                       );
@@ -541,17 +536,17 @@ export default function BillingPage({ preselectedPatient, onGoToReports }) {
 
                 {/* 3. Selected Tests Pills */}
                 {selectedTests.length > 0 && (
-                  <div className="bg-[#E8F0FE] border border-[#D2E3FC] rounded-2xl p-3.5">
-                    <div className="font-bold text-[#0B57D0] mb-2">Prescribed Investigations:</div>
+                  <div className="bg-blue-50/60 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40 rounded-xl p-3">
+                    <div className="font-semibold text-blue-700 dark:text-blue-300 text-xs mb-1.5">Selected Investigations:</div>
                     <div className="flex flex-wrap gap-1.5">
                       {selectedTests.map((t) => (
                         <span
                           key={t._id}
-                          className="bg-white border border-[#D2E3FC] text-[#001D35] font-semibold px-3 py-1 rounded-full text-[11px] flex items-center space-x-1.5 shadow-xs"
+                          className="bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-800 text-slate-800 dark:text-slate-200 font-medium px-2.5 py-0.5 rounded-lg text-[11px] flex items-center space-x-1"
                         >
                           <span>{t.name} (₹{t.price})</span>
                           <X
-                            className="w-3.5 h-3.5 cursor-pointer text-[#74777F] hover:text-[#BA1A1A]"
+                            className="w-3 h-3 cursor-pointer text-slate-400 hover:text-rose-600"
                             onClick={() => handleToggleTest(t._id)}
                           />
                         </span>
@@ -561,32 +556,33 @@ export default function BillingPage({ preselectedPatient, onGoToReports }) {
                 )}
 
                 {/* 4. GST & Discount Configuration */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-[#F0F4F9] p-4 rounded-2xl border border-[#E0E2EC]">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-xl border border-slate-200/80 dark:border-slate-800">
 
                   {/* GST Toggle */}
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-[#1F1F1F]">GST Billing Mode</span>
+                      <span className="font-medium text-slate-800 dark:text-slate-200">GST Billing Mode</span>
                       <button
                         type="button"
                         onClick={() => setIsGstBill(!isGstBill)}
-                        className={`px-3.5 py-1 rounded-full font-bold text-xs transition ${isGstBill
-                          ? 'bg-[#E8DEF8] text-[#4A4458] border border-[#CAC4D0]'
-                          : 'bg-[#E0E2EC] text-[#444746]'
-                          }`}
+                        className={`px-3 py-1 rounded-lg font-medium text-xs transition ${
+                          isGstBill
+                            ? 'bg-violet-50 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800'
+                            : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                        }`}
                       >
                         {isGstBill ? 'GST Enabled' : 'Non-GST (Exempt)'}
                       </button>
                     </div>
 
                     {isGstBill && (
-                      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#E0E2EC]">
+                      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
                         <div>
-                          <label className="block text-[11px] font-semibold text-[#444746] mb-1">GST Slab Rate</label>
+                          <label className="block text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">GST Rate</label>
                           <select
                             value={gstRate}
                             onChange={(e) => setGstRate(Number(e.target.value))}
-                            className="w-full px-2.5 py-1.5 border border-[#C4C7C5] rounded-xl bg-white"
+                            className="w-full px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                           >
                             <option value="5">5% (2.5% CGST + 2.5% SGST)</option>
                             <option value="12">12% (6% CGST + 6% SGST)</option>
@@ -600,47 +596,47 @@ export default function BillingPage({ preselectedPatient, onGoToReports }) {
                               type="checkbox"
                               checked={isInterState}
                               onChange={(e) => setIsInterState(e.target.checked)}
-                              className="rounded text-[#0B57D0]"
+                              className="rounded text-blue-600"
                             />
-                            <span className="text-[11px] font-semibold text-[#1F1F1F]">Inter-State (IGST)</span>
+                            <span className="text-[11px] font-medium text-slate-800 dark:text-slate-200">Inter-State (IGST)</span>
                           </label>
                         </div>
                       </div>
                     )}
                     {!isGstBill && (
-                      <p className="text-[11px] text-[#74777F] italic">
-                        Standard Diagnostic Health Service GST Exemption applied.
+                      <p className="text-[11px] text-slate-400 dark:text-slate-500 italic">
+                        Standard Diagnostic Pathology Exemption applied.
                       </p>
                     )}
                   </div>
 
                   {/* Discount */}
                   <div className="space-y-2">
-                    <span className="font-bold text-[#1F1F1F] block">Discount Waiver</span>
+                    <span className="font-medium text-slate-800 dark:text-slate-200 block">Discount Waiver</span>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="flex">
                         <select
                           value={discountType}
                           onChange={(e) => setDiscountType(e.target.value)}
-                          className="px-2 py-1.5 border border-r-0 border-[#C4C7C5] rounded-l-xl bg-white"
+                          className="px-2 py-1 border border-r-0 border-slate-200 dark:border-slate-700 rounded-l-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs"
                         >
                           <option value="flat">₹ Flat</option>
-                          <option value="percentage">% Pct</option>
+                          <option value="percentage">%</option>
                         </select>
                         <input
                           type="number"
                           min="0"
                           value={discountValue}
                           onChange={(e) => setDiscountValue(e.target.value)}
-                          className="w-full px-2 py-1.5 border border-[#C4C7C5] rounded-r-xl"
+                          className="w-full px-2 py-1 border border-slate-200 dark:border-slate-700 rounded-r-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-mono"
                         />
                       </div>
                       <input
                         type="text"
-                        placeholder="Reason (e.g. Senior Citizen)"
+                        placeholder="Reason"
                         value={discountReason}
                         onChange={(e) => setDiscountReason(e.target.value)}
-                        className="px-3 py-1.5 border border-[#C4C7C5] rounded-xl"
+                        className="px-2.5 py-1 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs"
                       />
                     </div>
                   </div>
@@ -648,13 +644,13 @@ export default function BillingPage({ preselectedPatient, onGoToReports }) {
                 </div>
 
                 {/* 5. Payment Collection Section */}
-                <div className="bg-[#F0F4F9] p-4 rounded-2xl border border-[#E0E2EC] grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="bg-slate-50 dark:bg-slate-800/40 p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
-                    <label className="block font-bold text-[#444746] mb-1">Payment Channel</label>
+                    <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">Payment Mode</label>
                     <select
                       value={paymentMode}
                       onChange={(e) => setPaymentMode(e.target.value)}
-                      className="w-full px-3 py-2 border border-[#C4C7C5] rounded-xl bg-white font-medium"
+                      className="w-full px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium"
                     >
                       <option value="Cash">Cash</option>
                       <option value="UPI">UPI / QR Code</option>
@@ -664,7 +660,7 @@ export default function BillingPage({ preselectedPatient, onGoToReports }) {
                   </div>
 
                   <div>
-                    <label className="block font-bold text-[#444746] mb-1">
+                    <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">
                       Initial Paid Amount (₹)
                     </label>
                     <input
@@ -673,43 +669,43 @@ export default function BillingPage({ preselectedPatient, onGoToReports }) {
                       placeholder={`Full (₹${grandTotal})`}
                       value={initialPaymentAmount}
                       onChange={(e) => setInitialPaymentAmount(e.target.value)}
-                      className="w-full px-3 py-2 border border-[#C4C7C5] rounded-xl font-mono font-bold"
+                      className="w-full px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono font-bold"
                     />
-                    <span className="text-[10px] text-[#74777F]">Leave blank for full advance payment</span>
+                    <span className="text-[10px] text-slate-400">Leave blank for full advance payment</span>
                   </div>
 
                   <div>
-                    <label className="block font-bold text-[#444746] mb-1">Transaction Ref #</label>
+                    <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">Transaction Ref #</label>
                     <input
                       type="text"
-                      placeholder="e.g. UPI Ref ID / Card Txn"
+                      placeholder="e.g. UPI Ref / Txn ID"
                       value={transactionId}
                       onChange={(e) => setTransactionId(e.target.value)}
-                      className="w-full px-3 py-2 border border-[#C4C7C5] rounded-xl font-mono"
+                      className="w-full px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono"
                     />
                   </div>
                 </div>
 
-                {/* 6. Material 3 Tonal Price Preview Bar */}
-                <div className="bg-[#E8F0FE] border border-[#D2E3FC] p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 text-[#1F1F1F]">
-                  <div className="space-x-4 text-xs font-medium">
-                    <span>Subtotal: <strong className="font-mono text-[#0B57D0]">₹{subtotal}</strong></span>
-                    {discountAmount > 0 && <span>Discount: <strong className="font-mono text-[#BA1A1A]">-₹{discountAmount}</strong></span>}
-                    {isGstBill && <span>GST: <strong className="font-mono text-[#6750A4]">+₹{(cgstAmount + sgstAmount + igstAmount).toFixed(2)}</strong></span>}
+                {/* 6. Price Summary & Submit Bar */}
+                <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 p-4 rounded-xl flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600 dark:text-slate-300">
+                    <span>Subtotal: <strong className="font-mono text-slate-900 dark:text-white">₹{subtotal}</strong></span>
+                    {discountAmount > 0 && <span>Discount: <strong className="font-mono text-rose-600">-₹{discountAmount}</strong></span>}
+                    {isGstBill && <span>GST: <strong className="font-mono text-violet-600">+₹{(cgstAmount + sgstAmount + igstAmount).toFixed(2)}</strong></span>}
                   </div>
 
                   <div className="flex items-center space-x-4">
                     <div className="text-right">
-                      <span className="text-xs text-[#74777F]">Net Payable:</span>
-                      <div className="text-xl font-black font-mono text-[#0B57D0]">₹{grandTotal.toFixed(2)}</div>
+                      <span className="text-[10px] uppercase font-semibold text-slate-400">Net Payable:</span>
+                      <div className="text-lg font-bold font-mono text-blue-600 dark:text-blue-400">₹{grandTotal.toFixed(2)}</div>
                     </div>
 
                     <button
                       type="submit"
                       disabled={creatingBill || selectedTestIds.length === 0}
-                      className="bg-[#0B57D0] hover:bg-[#0842A0] text-white font-bold text-xs px-6 py-2.5 rounded-full shadow-sm transition disabled:opacity-50"
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-5 py-2 rounded-xl shadow-xs transition disabled:opacity-50"
                     >
-                      {creatingBill ? 'Generating...' : 'Confirm & Generate Invoice'}
+                      {creatingBill ? 'Generating...' : 'Confirm & Generate'}
                     </button>
                   </div>
                 </div>
@@ -719,106 +715,104 @@ export default function BillingPage({ preselectedPatient, onGoToReports }) {
             </div>
           </div>
         </ModalPortal>
-      )
-      }
+      )}
 
-      {/* RECORD PAYMENT MODAL (Material Light Theme) */}
-      {
-        paymentModalBill && (
-          <ModalPortal isOpen={!!paymentModalBill} onClose={() => setPaymentModalBill(null)}>
-            <div
-              className="fixed inset-0 z-[100] flex items-center justify-center bg-[#001D35]/40 backdrop-blur-sm p-4 overflow-y-auto"
-              onClick={(e) => {
-                if (e.target === e.currentTarget) setPaymentModalBill(null);
-              }}
-            >
-              <div className="bg-white rounded-3xl shadow-m3-4 max-w-md w-full overflow-hidden border border-[#E0E2EC] my-auto">
-                <div className="px-6 py-4 bg-[#F8FAFD] border-b border-[#E0E2EC] flex items-center justify-between text-[#1F1F1F]">
+      {/* RECORD PAYMENT MODAL */}
+      {paymentModalBill && (
+        <ModalPortal isOpen={!!paymentModalBill} onClose={() => setPaymentModalBill(null)}>
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4 overflow-y-auto"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setPaymentModalBill(null);
+            }}
+          >
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 dark:border-slate-800 my-auto">
+              <div className="px-5 py-3.5 bg-slate-50 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold text-sm text-slate-900 dark:text-white">Record Payment</h3>
+                  <div className="text-xs text-blue-600 dark:text-blue-400 font-mono font-semibold">{paymentModalBill.invoiceNumber}</div>
+                </div>
+                <button
+                  onClick={() => setPaymentModalBill(null)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleRecordPaymentSubmit} className="p-5 space-y-4 text-xs">
+                <div className="bg-slate-50 dark:bg-slate-800/40 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 flex justify-between">
                   <div>
-                    <h3 className="font-bold text-sm text-[#1F1F1F]">Record Payment</h3>
-                    <div className="text-xs text-[#0B57D0] font-mono font-bold">{paymentModalBill.invoiceNumber}</div>
+                    <span className="text-slate-400 block">Patient:</span>
+                    <strong className="text-slate-900 dark:text-white">{paymentModalBill.patientSnapshot?.name}</strong>
                   </div>
-                  <button
-                    onClick={() => setPaymentModalBill(null)}
-                    className="p-1.5 rounded-full text-[#444746] hover:bg-[#E9EEF6]"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
+                  <div className="text-right">
+                    <span className="text-slate-400 block">Pending Due:</span>
+                    <strong className="text-rose-600 dark:text-rose-400 font-mono text-sm">₹{paymentModalBill.dueAmount}</strong>
+                  </div>
                 </div>
 
-                <form onSubmit={handleRecordPaymentSubmit} className="p-6 space-y-4 text-xs">
-                  <div className="bg-[#F0F4F9] p-3.5 rounded-2xl border border-[#E0E2EC] flex justify-between">
-                    <div>
-                      <span className="text-[#74777F] block">Patient:</span>
-                      <strong className="text-[#1F1F1F] text-sm">{paymentModalBill.patientSnapshot?.name}</strong>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-[#74777F] block">Pending Due:</span>
-                      <strong className="text-[#BA1A1A] font-mono text-sm">₹{paymentModalBill.dueAmount}</strong>
-                    </div>
-                  </div>
+                <div>
+                  <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    Payment Amount (₹) <span className="text-rose-600">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    max={paymentModalBill.dueAmount}
+                    value={paymentAmount}
+                    onChange={(e) => setPaymentAmount(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl font-mono font-bold text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800"
+                  />
+                </div>
 
-                  <div>
-                    <label className="block font-bold text-[#444746] mb-1">
-                      Payment Amount (₹) <span className="text-[#BA1A1A]">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      min="1"
-                      max={paymentModalBill.dueAmount}
-                      value={paymentAmount}
-                      onChange={(e) => setPaymentAmount(e.target.value)}
-                      className="w-full px-3.5 py-2.5 border border-[#C4C7C5] rounded-2xl font-mono font-bold text-sm bg-[#F8FAFD] focus:bg-white focus:border-[#0B57D0]"
-                    />
-                  </div>
+                <div>
+                  <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">Payment Mode</label>
+                  <select
+                    value={payMode}
+                    onChange={(e) => setPayMode(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                  >
+                    <option value="Cash">Cash</option>
+                    <option value="UPI">UPI / GPay / PhonePe</option>
+                    <option value="Card">Card</option>
+                    <option value="Net Banking">Net Banking</option>
+                  </select>
+                </div>
 
-                  <div>
-                    <label className="block font-bold text-[#444746] mb-1">Payment Channel</label>
-                    <select
-                      value={payMode}
-                      onChange={(e) => setPayMode(e.target.value)}
-                      className="w-full px-3.5 py-2.5 border border-[#C4C7C5] rounded-2xl bg-white"
-                    >
-                      <option value="Cash">Cash</option>
-                      <option value="UPI">UPI / GPay / PhonePe</option>
-                      <option value="Card">Card</option>
-                      <option value="Net Banking">Net Banking</option>
-                    </select>
-                  </div>
+                <div>
+                  <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">Transaction Ref / Note</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. UPI Ref # 92384..."
+                    value={payTxnId}
+                    onChange={(e) => setPayTxnId(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl font-mono bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                  />
+                </div>
 
-                  <div>
-                    <label className="block font-bold text-[#444746] mb-1">Transaction Ref / Note</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. UPI Ref # 92384..."
-                      value={payTxnId}
-                      onChange={(e) => setPayTxnId(e.target.value)}
-                      className="w-full px-3.5 py-2.5 border border-[#C4C7C5] rounded-2xl font-mono"
-                    />
-                  </div>
-
-                  <div className="pt-2 flex justify-end space-x-2.5">
-                    <button
-                      type="button"
-                      onClick={() => setPaymentModalBill(null)}
-                      className="px-5 py-2 border border-[#C4C7C5] rounded-full font-bold text-[#444746] hover:bg-[#F0F4F9]"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={recordingPayment}
-                      className="px-5 py-2 bg-[#137333] hover:bg-[#0E5826] text-white font-bold rounded-full shadow-sm transition disabled:opacity-50"
-                    >
-                      {recordingPayment ? 'Recording...' : 'Accept Payment'}
-                    </button>
-                  </div>
-                </form>
-              </div>
+                <div className="pt-2 flex justify-end space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentModalBill(null)}
+                    className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={recordingPayment}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-xs transition disabled:opacity-50"
+                  >
+                    {recordingPayment ? 'Recording...' : 'Accept Payment'}
+                  </button>
+                </div>
+              </form>
             </div>
-          </ModalPortal>
-        )}
+          </div>
+        </ModalPortal>
+      )}
 
       {/* PRINT INVOICE MODAL */}
       <PrintModal

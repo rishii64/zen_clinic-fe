@@ -27,30 +27,79 @@ export default function PrintModal({
     try {
       setDownloading(true);
       const element = printContentRef.current;
-      
+
+      // Ensure all web fonts and DOM subtrees are fully loaded
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
+      const scrollW = element.scrollWidth || 794;
+      const scrollH = element.scrollHeight || 1123;
+
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
+        allowTaint: true,
         logging: false,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        width: scrollW,
+        height: scrollH,
+        windowWidth: scrollW,
+        windowHeight: scrollH,
+        x: 0,
+        y: 0,
+        scrollX: 0,
+        scrollY: 0,
+        onclone: (clonedDoc, clonedElement) => {
+          clonedElement.style.width = '210mm';
+          clonedElement.style.minHeight = '297mm';
+          clonedElement.style.height = 'auto';
+          clonedElement.style.overflow = 'visible';
+          clonedElement.style.maxHeight = 'none';
+          clonedElement.style.transform = 'none';
+
+          let parent = clonedElement.parentElement;
+          while (parent && parent !== clonedDoc.body) {
+            parent.style.overflow = 'visible';
+            parent.style.maxHeight = 'none';
+            parent.style.height = 'auto';
+            parent.style.transform = 'none';
+            parent = parent.parentElement;
+          }
+        }
       });
 
       const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgWidth = 210;
-      const pageHeight = 297;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
+      const pdf = new jsPDF({
+        orientation: 'p',
+        unit: 'mm',
+        format: 'a4',
+        compress: true
+      });
 
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+      const a4Width = 210;
+      const a4Height = 297;
+      const calculatedHeight = (canvas.height * a4Width) / canvas.width;
 
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+      if (calculatedHeight <= a4Height + 5) {
+        // Fits neatly onto single A4 page - preserve natural 1:1 aspect ratio
+        const renderHeight = Math.min(calculatedHeight, a4Height);
+        pdf.addImage(imgData, 'PNG', 0, 0, a4Width, renderHeight);
+      } else {
+        // Multiple pages document
+        let heightLeft = calculatedHeight;
+        let position = 0;
+
+        pdf.addImage(imgData, 'PNG', 0, position, a4Width, calculatedHeight);
+        heightLeft -= a4Height;
+
+        while (heightLeft > 5) {
+          position -= a4Height;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 0, position, a4Width, calculatedHeight);
+          heightLeft -= a4Height;
+        }
       }
 
       pdf.save(`${documentType}_${Date.now()}.pdf`);
@@ -64,46 +113,44 @@ export default function PrintModal({
 
   return (
     <ModalPortal isOpen={isOpen} onClose={onClose}>
-      <div 
-        className="fixed inset-0 z-[100] flex items-center justify-center bg-[#001D35]/40 backdrop-blur-sm p-4 overflow-y-auto"
+      <div
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto"
         onClick={(e) => {
           if (e.target === e.currentTarget) onClose();
         }}
       >
-        <div className="relative bg-white rounded-3xl shadow-m3-4 max-w-5xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-[#E0E2EC] my-auto">
-          
-          {/* Modal Top Bar (Material 3 Light Theme) */}
-          <div className="px-6 py-3.5 bg-[#F8FAFD] border-b border-[#E0E2EC] flex items-center justify-between no-print">
-            <div className="flex items-center space-x-3">
-              <span className="font-bold text-base text-[#1F1F1F]">{title}</span>
-              <span className="text-xs bg-[#C2E7FF] text-[#001D35] px-2.5 py-0.5 rounded-full font-mono font-bold">
-                A4 Format
+        <div className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-5xl w-full max-h-[95vh] flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800 my-auto">
+
+          {/* Modal Header */}
+          <div className="px-5 py-3 bg-slate-50 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 no-print">
+            <div className="flex items-center space-x-2.5">
+              <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-white">{title}</span>
+              <span className="text-[10px] bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-900/40 px-2 py-0.5 rounded-full font-mono font-semibold">
+                A4
               </span>
             </div>
 
-            {/* Action Buttons in Material 3 Style */}
-            <div className="flex items-center space-x-2.5">
-              
-              {/* Pre-printed stationery toggle */}
+            {/* Action Buttons */}
+            <div className="flex items-center space-x-2">
+              {/* Stationery header toggle */}
               <button
                 onClick={() => setShowLetterhead(!showLetterhead)}
-                className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition ${
-                  showLetterhead
-                    ? 'bg-[#E8F0FE] text-[#0B57D0] border border-[#A8C7FA]'
-                    : 'bg-[#F0F4F9] text-[#74777F] border border-[#C4C7C5]'
-                }`}
-                title="Toggle clinic header for printing on pre-printed clinic letterhead paper"
+                className={`flex items-center space-x-1 px-3 py-1.5 rounded-xl text-xs font-medium transition ${showLetterhead
+                    ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
+                  }`}
+                title="Toggle clinic header for printing on pre-printed stationery"
               >
-                <span>Letterhead Header:</span>
+                <span>Letterhead:</span>
                 <strong className="uppercase">{showLetterhead ? 'ON' : 'OFF'}</strong>
               </button>
 
               {/* Print Button */}
               <button
                 onClick={handlePrint}
-                className="flex items-center space-x-1.5 bg-[#0B57D0] hover:bg-[#0842A0] text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-sm transition"
+                className="flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-xs transition"
               >
-                <Printer className="w-4 h-4" />
+                <Printer className="w-3.5 h-3.5" />
                 <span>Print</span>
               </button>
 
@@ -111,25 +158,29 @@ export default function PrintModal({
               <button
                 onClick={handleDownloadPdf}
                 disabled={downloading}
-                className="flex items-center space-x-1.5 bg-[#CEEAD6] text-[#0D652D] hover:bg-[#A8DAB5] px-4 py-1.5 rounded-full text-xs font-bold transition disabled:opacity-50"
+                className="flex items-center space-x-1.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 border border-emerald-200 dark:border-emerald-800 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition disabled:opacity-50"
               >
-                <Download className="w-4 h-4" />
-                <span>{downloading ? 'Exporting...' : 'Download PDF'}</span>
+                <Download className="w-3.5 h-3.5" />
+                <span>{downloading ? 'Exporting...' : 'PDF'}</span>
               </button>
 
               {/* Close Button */}
               <button
                 onClick={onClose}
-                className="p-1.5 text-[#444746] hover:text-[#1F1F1F] rounded-full hover:bg-[#E9EEF6] transition"
+                className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          {/* Modal Document Preview Body */}
-          <div className="p-6 overflow-y-auto flex justify-center bg-[#F0F4F9]">
-            <div ref={printContentRef} className="print-wrapper bg-white shadow-m3-2 rounded-xl overflow-hidden">
+          {/* Modal Document Preview Body - Paper preview retains white backdrop */}
+          <div className="p-3 sm:p-6 overflow-auto flex justify-center bg-slate-100/90 dark:bg-slate-950 flex-1 min-h-0">
+            <div
+              ref={printContentRef}
+              className="print-wrapper bg-white text-slate-900 shadow-2xl rounded-sm shrink-0 my-2"
+              style={{ width: '210mm' }}
+            >
               {typeof children === 'function' ? children(showLetterhead) : children}
             </div>
           </div>

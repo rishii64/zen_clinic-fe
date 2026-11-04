@@ -1,4 +1,5 @@
 import React from 'react';
+import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard,
   Users,
@@ -10,6 +11,7 @@ import {
 } from 'lucide-react';
 
 export default function Sidebar({ activeTab, setActiveTab }) {
+  const { clinicConfig } = useAuth();
   const menuItems = [
     {
       id: 'dashboard',
@@ -37,7 +39,7 @@ export default function Sidebar({ activeTab, setActiveTab }) {
     },
     {
       id: 'tests',
-      label: 'Test Tariff (74)',
+      label: 'Test Tariff',
       icon: ListOrdered,
       badge: 'Tariff'
     },
@@ -50,10 +52,10 @@ export default function Sidebar({ activeTab, setActiveTab }) {
   ];
 
   return (
-    <aside className="w-64 bg-[#F8FAFD] border-r border-[#E0E2EC] flex flex-col shrink-0 min-h-[calc(100vh-61px)] no-print">
+    <aside className="w-64 h-full bg-[#F8FAFD] border-r border-[#E0E2EC] flex flex-col shrink-0 overflow-hidden no-print select-none">
       
       {/* Navigation Links in Material 3 Navigation Drawer Style */}
-      <div className="p-3 space-y-1.5 flex-1">
+      <div className="p-3 space-y-1.5 flex-1 overflow-y-auto">
         <div className="text-[11px] font-bold text-[#74777F] uppercase tracking-wider px-4 py-2">
           Clinical Modules
         </div>
@@ -92,10 +94,10 @@ export default function Sidebar({ activeTab, setActiveTab }) {
       </div>
 
       {/* Footer Info Box (Material 3 Tonal Container) */}
-      <div className="p-4 m-3 rounded-2xl bg-white border border-[#E0E2EC] shadow-sm text-xs">
+      <div className="p-4 m-3 rounded-2xl bg-white border border-[#E0E2EC] shadow-sm text-xs shrink-0">
         <div className="flex items-center space-x-2 text-[#0B57D0] font-bold mb-1">
           <HeartPulse className="w-4 h-4 text-[#137333]" />
-          <span className="text-[#1F1F1F]">Raj Janch Ghar</span>
+          <span className="text-[#1F1F1F]">{clinicConfig?.clinicName || 'Zen Clinic'}</span>
         </div>
         <p className="text-[11px] text-[#444746] leading-relaxed">
           Diagnostic Pathology Laboratory & GST Invoicing System.

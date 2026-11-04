@@ -1,18 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth, DEMO_USERS } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import {
   Activity,
   LogOut,
-  Clock,
-  Sparkles,
-  ChevronDown,
-  UserCheck
+  Clock
 } from 'lucide-react';
 
 export default function Navbar() {
-  const { user, logout, switchRole, clinicConfig } = useAuth();
+  const { user, logout, clinicConfig } = useAuth();
   const [timeStr, setTimeStr] = useState('');
-  const [showRoleMenu, setShowRoleMenu] = useState(false);
 
   useEffect(() => {
     const updateTime = () => {
@@ -31,23 +27,10 @@ export default function Navbar() {
     return () => clearInterval(interval);
   }, []);
 
-  const getRoleChipStyle = (role) => {
-    switch (role) {
-      case 'Admin':
-        return 'bg-[#E8DEF8] text-[#4A4458] border border-[#CAC4D0]';
-      case 'Doctor':
-        return 'bg-[#CEEAD6] text-[#0D652D] border border-[#A8DAB5]';
-      case 'Technician':
-        return 'bg-[#FFE082] text-[#8C4A00] border border-[#FFD54F]';
-      case 'Receptionist':
-        return 'bg-[#C2E7FF] text-[#004A77] border border-[#7FCFFF]';
-      default:
-        return 'bg-[#F0F4F9] text-[#444746] border border-[#C4C7C5]';
-    }
-  };
+
 
   return (
-    <header className="bg-white border-b border-[#E0E2EC] sticky top-0 z-30 no-print shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
+    <header className="bg-white border-b border-[#E0E2EC] sticky top-0 z-30 shrink-0 no-print shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
       <div className="px-6 py-2.5 flex items-center justify-between">
         
         {/* Left: Material Brand Identity */}
@@ -58,10 +41,10 @@ export default function Navbar() {
           <div>
             <div className="flex items-center space-x-2">
               <span className="font-extrabold text-lg text-[#1F1F1F] tracking-tight">
-                {clinicConfig?.clinicName || 'RAJ JANCH GHAR'}
+                {clinicConfig?.clinicName || 'Zen Clinic'}
               </span>
               <span className="text-[11px] bg-[#FFDAD6] text-[#93000A] font-bold px-2 py-0.5 rounded-full border border-[#FFB4AB]">
-                {clinicConfig?.regNumber || 'Reg.No - 430/2022'}
+                {clinicConfig?.regNumber || 'Diagnostic Lab'}
               </span>
             </div>
             <p className="text-[11px] text-[#444746] font-medium">
@@ -70,52 +53,20 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Center: Live Clinic Time (Material Tonal Pill) */}
+        {/* Center: Live Clinic Time */}
         <div className="hidden lg:flex items-center space-x-2 text-xs font-medium text-[#444746] bg-[#F0F4F9] px-4 py-1.5 rounded-full border border-[#E0E2EC]">
           <Clock className="w-3.5 h-3.5 text-[#0B57D0]" />
           <span>{timeStr}</span>
         </div>
 
-        {/* Right: Material 3 Role Switcher + User Profile */}
+        {/* Right: User Role & Profile */}
         <div className="flex items-center space-x-3">
           
-          {/* Quick 1-Click Role Switcher (Material Filter Chip / Menu) */}
-          <div className="relative">
-            <button
-              onClick={() => setShowRoleMenu(!showRoleMenu)}
-              className="flex items-center space-x-2 bg-[#F0F4F9] hover:bg-[#E3E8EF] border border-[#C4C7C5] px-3.5 py-1.5 rounded-full text-xs font-semibold text-[#1F1F1F] transition shadow-sm"
-              title="Click to switch role (Admin, Doctor, Technician, Receptionist)"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-[#0B57D0]" />
-              <span>Role: <strong className="text-[#0B57D0]">{user?.role || 'Guest'}</strong></span>
-              <ChevronDown className="w-3.5 h-3.5 text-[#444746]" />
-            </button>
-
-            {showRoleMenu && (
-              <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-m3-3 border border-[#E0E2EC] py-2 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
-                <div className="px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-[#74777F] border-b border-[#F0F4F9]">
-                  Switch Role (Instant 1-Click)
-                </div>
-                {DEMO_USERS.map((demo) => (
-                  <button
-                    key={demo.role}
-                    onClick={() => {
-                      switchRole(demo.role);
-                      setShowRoleMenu(false);
-                    }}
-                    className={`w-full text-left px-4 py-2.5 text-xs flex items-center justify-between hover:bg-[#F0F4F9] transition ${
-                      user?.role === demo.role ? 'bg-[#E8F0FE] font-bold text-[#0B57D0]' : 'text-[#1F1F1F]'
-                    }`}
-                  >
-                    <span>{demo.label}</span>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${getRoleChipStyle(demo.role)}`}>
-                      {demo.role}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          {user?.designation && (
+            <span className="text-[11px] bg-[#E8F0FE] text-[#0B57D0] px-2.5 py-0.5 rounded-full font-bold border border-[#D2E3FC]">
+              {user.designation}
+            </span>
+          )}
 
           {/* User Profile */}
           <div className="flex items-center space-x-2.5 pl-2 border-l border-[#E0E2EC]">

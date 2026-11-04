@@ -7,14 +7,11 @@ import {
   Search,
   PlusCircle,
   Edit2,
-  Check,
   X,
-  FileSpreadsheet,
   ChevronDown,
   ChevronUp,
   Tag,
-  Clock,
-  Sparkles
+  Clock
 } from 'lucide-react';
 
 export default function TestsCatalogPage() {
@@ -138,22 +135,20 @@ export default function TestsCatalogPage() {
             <div className="w-8 h-8 rounded-xl bg-[#D3E3FD] text-[#0B57D0] flex items-center justify-center">
               <ListOrdered className="w-4 h-4" />
             </div>
-            <span>Master Test Tariff (74 Investigations)</span>
+            <span>Diagnostic Tests & Tariffs</span>
           </h1>
           <p className="text-xs text-[#74777F] mt-1">
-            Preloaded with 74 standard laboratory tests from reference tariff sheet, biological reference intervals, and sample criteria.
+            Manage laboratory test catalog, investigation parameters, biological reference intervals, and tariffs.
           </p>
         </div>
 
-        {user?.role === 'Admin' && (
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="bg-[#0B57D0] hover:bg-[#0842A0] text-white font-bold text-xs px-5 py-2.5 rounded-full shadow-sm flex items-center space-x-2 transition shrink-0"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span>Add Custom Test</span>
-          </button>
-        )}
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="bg-[#0B57D0] hover:bg-[#0842A0] text-white font-bold text-xs px-5 py-2.5 rounded-full shadow-sm flex items-center space-x-2 transition shrink-0"
+        >
+          <PlusCircle className="w-4 h-4" />
+          <span>Add Custom Test</span>
+        </button>
       </div>
 
       {/* Category Pills & Search */}
@@ -277,20 +272,16 @@ export default function TestsCatalogPage() {
                     Tariff Rate: <strong className="text-[#1F1F1F]">₹{test.price}</strong>
                   </span>
 
-                  {user?.role === 'Admin' ? (
-                    <button
-                      onClick={() => {
-                        setEditingTest(test);
-                        setNewPrice(test.price);
-                      }}
-                      className="text-[#0B57D0] hover:text-[#0842A0] font-bold text-xs flex items-center space-x-1"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                      <span>Edit Price</span>
-                    </button>
-                  ) : (
-                    <span className="text-[10px] text-[#74777F]">Standard Rate</span>
-                  )}
+                  <button
+                    onClick={() => {
+                      setEditingTest(test);
+                      setNewPrice(test.price);
+                    }}
+                    className="text-[#0B57D0] hover:text-[#0842A0] font-bold text-xs flex items-center space-x-1"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                    <span>Edit Price</span>
+                  </button>
                 </div>
               </div>
             );
@@ -302,7 +293,7 @@ export default function TestsCatalogPage() {
         )}
       </div>
 
-      {/* EDIT PRICE MODAL (Material Light Theme) */}
+      {/* EDIT PRICE MODAL */}
       {editingTest && (
         <ModalPortal isOpen={!!editingTest} onClose={() => setEditingTest(null)}>
           <div 
@@ -359,7 +350,7 @@ export default function TestsCatalogPage() {
         </ModalPortal>
       )}
 
-      {/* ADD NEW TEST MODAL (Material Light Theme) */}
+      {/* ADD NEW TEST MODAL */}
       {showAddModal && (
         <ModalPortal isOpen={showAddModal} onClose={() => setShowAddModal(false)}>
           <div 

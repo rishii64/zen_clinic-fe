@@ -1,22 +1,30 @@
 import React, { useState } from 'react';
-import { useAuth, DEMO_USERS } from '../context/AuthContext';
-import { Activity, Lock, Mail, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { Activity, Lock, Mail, ArrowRight, UserPlus, LogIn, User } from 'lucide-react';
 
 export default function LoginPage() {
-  const { login, switchRole } = useAuth();
+  const { login, register, clinicConfig } = useAuth();
+  const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccessMsg('');
     try {
       setLoading(true);
-      await login(email, password);
+      if (isRegisterMode) {
+        await register({ name, email, password });
+      } else {
+        await login(email, password);
+      }
     } catch (err) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+      setError(err.message || 'Operation failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -32,21 +40,45 @@ export default function LoginPage() {
             <Activity className="w-8 h-8" />
           </div>
           <h1 className="text-2xl font-black text-[#1F1F1F] tracking-tight">
-            RAJ JANCH GHAR
+            {clinicConfig?.clinicName || 'Zen Clinic'}
           </h1>
           <p className="text-xs text-[#444746] mt-0.5">
-            Main Road Neta Ji Chowk, Saharghat • Reg.No - 430/2022
+            {clinicConfig?.address || clinicConfig?.tagline || 'Diagnostic Pathology & Clinic ERP'}
           </p>
           <div className="inline-block mt-2 bg-[#E8F0FE] text-[#0B57D0] text-[11px] font-bold px-3 py-1 rounded-full border border-[#D2E3FC]">
-            Diagnostic Pathology & Billing Management
+            {clinicConfig?.regNumber ? `Reg: ${clinicConfig.regNumber}` : 'Diagnostic Pathology & Invoicing Management'}
           </div>
         </div>
 
-        {/* Login Box (Material 3 Elevated Card) */}
+        {/* Login / Register Card */}
         <div className="bg-white rounded-3xl p-8 shadow-m3-2 border border-[#E0E2EC] text-xs">
           
+          {/* Mode Switcher Tabs */}
+          <div className="flex bg-[#F0F4F9] p-1 rounded-2xl mb-6">
+            <button
+              type="button"
+              onClick={() => { setIsRegisterMode(false); setError(''); setSuccessMsg(''); }}
+              className={`flex-1 py-2 rounded-xl font-bold flex items-center justify-center space-x-1.5 transition ${
+                !isRegisterMode ? 'bg-white text-[#0B57D0] shadow-xs' : 'text-[#444746] hover:text-[#1F1F1F]'
+              }`}
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              <span>Sign In</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => { setIsRegisterMode(true); setError(''); setSuccessMsg(''); }}
+              className={`flex-1 py-2 rounded-xl font-bold flex items-center justify-center space-x-1.5 transition ${
+                isRegisterMode ? 'bg-white text-[#0B57D0] shadow-xs' : 'text-[#444746] hover:text-[#1F1F1F]'
+              }`}
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              <span>Create Account</span>
+            </button>
+          </div>
+
           <h2 className="text-sm font-bold text-[#1F1F1F] mb-4 text-center">
-            Staff Portal Sign In
+            {isRegisterMode ? 'Create User Account' : 'Portal Sign In'}
           </h2>
 
           {error && (
@@ -55,7 +87,30 @@ export default function LoginPage() {
             </div>
           )}
 
+          {successMsg && (
+            <div className="mb-4 p-3 bg-[#C4EED0] text-[#072711] border border-[#6DD58C] rounded-2xl font-medium">
+              {successMsg}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
+            {isRegisterMode && (
+              <div>
+                <label className="block font-bold text-[#444746] mb-1">Full Name</label>
+                <div className="relative">
+                  <User className="w-4 h-4 text-[#74777F] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Dr. Jane Doe / Staff"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full pl-10 pr-3.5 py-2.5 bg-[#F8FAFD] border border-[#C4C7C5] rounded-2xl focus:bg-white focus:border-[#0B57D0] focus:ring-1 focus:ring-[#0B57D0] font-medium"
+                  />
+                </div>
+              </div>
+            )}
+
             <div>
               <label className="block font-bold text-[#444746] mb-1">Email Address</label>
               <div className="relative">
@@ -63,7 +118,7 @@ export default function LoginPage() {
                 <input
                   type="email"
                   required
-                  placeholder="admin@rajjanchghar.com"
+                  placeholder="name@clinic.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-3.5 py-2.5 bg-[#F8FAFD] border border-[#C4C7C5] rounded-2xl focus:bg-white focus:border-[#0B57D0] focus:ring-1 focus:ring-[#0B57D0] font-medium"
@@ -91,37 +146,15 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full py-3 bg-[#0B57D0] hover:bg-[#0842A0] text-white font-bold rounded-full shadow-sm transition flex items-center justify-center space-x-2 disabled:opacity-50 text-xs"
             >
-              <span>{loading ? 'Authenticating...' : 'Sign In to Portal'}</span>
+              <span>{loading ? 'Processing...' : (isRegisterMode ? 'Create Account & Sign In' : 'Sign In to Portal')}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
 
-          {/* Quick 1-Click Role Logins */}
-          <div className="mt-6 pt-5 border-t border-[#E0E2EC]">
-            <div className="text-[11px] font-bold text-[#74777F] uppercase tracking-wider text-center mb-3 flex items-center justify-center space-x-1">
-              <Sparkles className="w-3.5 h-3.5 text-[#0B57D0]" />
-              <span>Or 1-Click Demo Login</span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              {DEMO_USERS.map((demo) => (
-                <button
-                  key={demo.role}
-                  type="button"
-                  onClick={() => switchRole(demo.role)}
-                  className="p-2.5 text-left rounded-2xl bg-[#F8FAFD] border border-[#E0E2EC] hover:border-[#0B57D0] hover:bg-[#E8F0FE] transition"
-                >
-                  <div className="font-bold text-[#1F1F1F] text-xs">{demo.role}</div>
-                  <div className="text-[10px] text-[#74777F] truncate">{demo.email}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-
         </div>
 
         <div className="text-center text-[11px] text-[#74777F]">
-          Raj Janch Ghar ERP System • Saharghat, Madhubani
+          {clinicConfig?.clinicName || 'Zen Clinic'} ERP Management System
         </div>
 
       </div>

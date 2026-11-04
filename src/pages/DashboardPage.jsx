@@ -65,15 +65,15 @@ export default function DashboardPage({ setActiveTab, onSelectReport, onSelectBi
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="inline-flex items-center space-x-2 bg-white/80 border border-[#D2E3FC] px-3.5 py-1 rounded-full text-xs font-bold text-[#0B57D0] mb-2 shadow-xs">
-              <span>🏥 {clinicConfig?.clinicName || 'RAJ JANCH GHAR'}</span>
+              <span>🏥 {clinicConfig?.clinicName || 'Zen Clinic'}</span>
               <span>•</span>
-              <span className="text-[#444746]">{clinicConfig?.address || 'SAHARGHAT'}</span>
+              <span className="text-[#444746]">{clinicConfig?.address || 'Clinical Laboratory'}</span>
             </div>
             <h1 className="text-2xl font-extrabold text-[#1F1F1F] tracking-tight">
               Welcome back, {user?.name || 'Staff Member'}!
             </h1>
             <p className="text-[#444746] text-xs mt-1 max-w-xl leading-relaxed">
-              Active role: <strong className="text-[#0B57D0] bg-[#D3E3FD] px-2 py-0.5 rounded-full">{user?.role}</strong> ({user?.designation || 'Staff'}). Diagnostic report pipelines, billing registers, and test tariffs are active.
+              Diagnostic report pipelines, billing registers, and test tariffs are active.
             </p>
           </div>
 
@@ -234,7 +234,7 @@ export default function DashboardPage({ setActiveTab, onSelectReport, onSelectBi
               onClick={() => setActiveTab('tests')}
               className="text-[11px] text-[#0B57D0] font-bold hover:underline"
             >
-              View 74 Tariff →
+              View Tariff →
             </button>
           </div>
 

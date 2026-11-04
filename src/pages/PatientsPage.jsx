@@ -206,7 +206,7 @@ export default function PatientsPage({ onOrderTestsForPatient, onViewReport }) {
                       )}
                     </td>
                     <td className="py-4 px-6 text-[#444746] whitespace-nowrap">
-                      <span className="whitespace-nowrap">{pat.address || 'Local Saharghat'}</span>
+                      <span className="whitespace-nowrap">{pat.address || '---'}</span>
                     </td>
                     <td className="py-4 px-6 whitespace-nowrap">
                       <span className="inline-block bg-[#F0F4F9] text-[#444746] font-bold px-2.5 py-0.5 rounded-full text-[11px] border border-[#E0E2EC] whitespace-nowrap">
@@ -377,7 +377,7 @@ export default function PatientsPage({ onOrderTestsForPatient, onViewReport }) {
                 <label className="block font-bold text-[#444746] mb-1">Address / Village / City</label>
                 <input
                   type="text"
-                  placeholder="e.g. Ward No. 4, Saharghat, Madhubani"
+                  placeholder="e.g. Street Address, City"
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   className="w-full px-3.5 py-2.5 bg-[#F8FAFD] border border-[#C4C7C5] rounded-2xl focus:bg-white focus:border-[#0B57D0] font-medium"

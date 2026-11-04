@@ -7,17 +7,17 @@ export default function ReportLetterhead({
   children
 }) {
   const clinic = config || {
-    clinicName: 'RAJ JANCH GHAR',
-    regNumber: 'Reg.No - 430/2022',
-    address: 'MAIN ROAD NETA JI CHOWK SAHARGHAT',
+    clinicName: 'Zen Clinic',
+    regNumber: '',
+    address: '',
     doctorDetails: {
-      name: 'Dr. R.K. MANDAL',
-      qualifications: 'M.B.B.S',
-      regNo: '18840'
+      name: '',
+      qualifications: '',
+      regNo: ''
     },
     technicianDetails: {
-      name: 'Mr. R.K. Raut',
-      qualifications: '(BMLT) Jaipur'
+      name: '',
+      qualifications: ''
     },
     reportDisclaimers: [
       '1. Invalid for medico legal purpose',
@@ -123,7 +123,7 @@ export default function ReportLetterhead({
               {/* Circular Ring with Stars */}
               <div className="w-96 h-96 rounded-full border-8 border-rose-900 flex flex-col items-center justify-center p-6 text-center">
                 <div className="text-rose-900 font-extrabold text-2xl tracking-widest uppercase mb-2">
-                  ★ {clinic.clinicName || 'RAJ JANCH GHAR'} ★
+                  ★ {clinic.clinicName || 'ZEN CLINIC'} ★
                 </div>
                 {/* Microscope Vector Graphic */}
                 <svg className="w-48 h-48 text-rose-900 my-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -135,7 +135,7 @@ export default function ReportLetterhead({
                   <path d="M12 6V3a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v3" />
                 </svg>
                 <div className="text-rose-900 font-bold text-lg tracking-widest uppercase mt-2">
-                  ★ SAHARGHAT ★
+                  ★ {clinic.watermarkText || clinic.clinicName || 'DIAGNOSTICS'} ★
                 </div>
               </div>
             </div>

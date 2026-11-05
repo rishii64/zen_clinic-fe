@@ -8,7 +8,9 @@ import {
   Printer,
   Check,
   X,
-  Loader2
+  Loader2,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
 import PrintModal from '../components/PrintModal';
 import InvoiceTemplate from '../components/InvoiceTemplate';
@@ -57,6 +59,10 @@ export default function BillingPage({ preselectedPatient, onGoToReports }) {
   // Print Invoice Modal State
   const [printBill, setPrintBill] = useState(null);
 
+  // Delete Bill State
+  const [deletingBill, setDeletingBill] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
   useEffect(() => {
     fetchBills();
     fetchPatientsAndTests();
@@ -80,6 +86,20 @@ export default function BillingPage({ preselectedPatient, onGoToReports }) {
       console.error('Failed to load bills:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteBill = async () => {
+    if (!deletingBill) return;
+    try {
+      setDeleting(true);
+      await api.deleteBill(deletingBill._id);
+      setDeletingBill(null);
+      fetchBills();
+    } catch (err) {
+      alert(err.message || 'Failed to delete bill');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -371,6 +391,13 @@ export default function BillingPage({ preselectedPatient, onGoToReports }) {
                             title="Print tax-compliant receipt"
                           >
                             <Printer className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => setDeletingBill(bill)}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
+                            title="Delete invoice"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </td>
@@ -825,6 +852,57 @@ export default function BillingPage({ preselectedPatient, onGoToReports }) {
           <InvoiceTemplate bill={printBill} config={clinicConfig} showLetterhead={showLetterhead} />
         )}
       </PrintModal>
+
+      {/* Delete Invoice Confirmation Modal */}
+      {deletingBill && (
+        <ModalPortal isOpen={!!deletingBill} onClose={() => setDeletingBill(null)}>
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4 overflow-y-auto"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setDeletingBill(null);
+            }}
+          >
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 dark:border-slate-800 my-auto p-5 space-y-4">
+              <div className="flex items-center space-x-3 text-rose-600 dark:text-rose-400">
+                <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/40 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white">Delete Invoice Receipt</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">This action cannot be undone.</p>
+                </div>
+              </div>
+
+              <div className="bg-slate-50 dark:bg-slate-800/50 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/80 text-xs text-slate-700 dark:text-slate-300 space-y-1">
+                <div>Are you sure you want to delete Invoice:</div>
+                <div className="font-mono font-bold text-blue-600 dark:text-blue-400 text-sm">#{deletingBill.invoiceNumber}</div>
+                <div>Patient: <strong className="text-slate-900 dark:text-white">{deletingBill.patientSnapshot?.name}</strong></div>
+                <div className="font-mono font-semibold text-slate-800 dark:text-slate-200">Amount: ₹{Number(deletingBill.grandTotal || 0).toFixed(2)} • Status: {deletingBill.paymentStatus}</div>
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setDeletingBill(null)}
+                  disabled={deleting}
+                  className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteBill}
+                  disabled={deleting}
+                  className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition shadow-xs flex items-center space-x-1.5 disabled:opacity-50"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>{deleting ? 'Deleting...' : 'Delete Invoice'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </ModalPortal>
+      )}
 
     </div>
   );

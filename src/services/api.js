@@ -59,6 +59,7 @@ export const api = {
   createBill: (billData) => request('/billing', { method: 'POST', body: JSON.stringify(billData) }),
   addPayment: (id, paymentData) => request(`/billing/${id}/payments`, { method: 'POST', body: JSON.stringify(paymentData) }),
   cancelBill: (id, reason) => request(`/billing/${id}/cancel`, { method: 'POST', body: JSON.stringify({ reason }) }),
+  deleteBill: (id) => request(`/billing/${id}`, { method: 'DELETE' }),
 
   // Reports
   getReports: (params = {}) => {
@@ -69,6 +70,7 @@ export const api = {
   updateReportResults: (id, data) => request(`/reports/${id}/results`, { method: 'PUT', body: JSON.stringify(data) }),
   approveReport: (id, data) => request(`/reports/${id}/approve`, { method: 'PUT', body: JSON.stringify(data) }),
   deliverReport: (id) => request(`/reports/${id}/deliver`, { method: 'PUT' }),
+  deleteReport: (id) => request(`/reports/${id}`, { method: 'DELETE' }),
 
   // Dashboard
   getDashboardStats: () => request('/dashboard/stats'),

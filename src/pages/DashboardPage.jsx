@@ -57,7 +57,7 @@ export default function DashboardPage({ setActiveTab, onSelectReport, onSelectBi
 
   return (
     <div className="space-y-6">
-      
+
       {/* Welcome Banner */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-card">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -104,7 +104,7 @@ export default function DashboardPage({ setActiveTab, onSelectReport, onSelectBi
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        
+
         {/* Total Patients */}
         <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-card hover:shadow-card-hover transition-all">
           <div className="flex items-center justify-between">
@@ -174,7 +174,7 @@ export default function DashboardPage({ setActiveTab, onSelectReport, onSelectBi
 
       {/* Revenue Split & Diagnostic Pipeline */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        
+
         {/* Payment Channels Card */}
         <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-card">
           <h2 className="text-sm font-semibold text-slate-900 dark:text-white mb-3.5 flex items-center space-x-2">
@@ -291,7 +291,7 @@ export default function DashboardPage({ setActiveTab, onSelectReport, onSelectBi
 
       {/* Recent Activity: Bills & Reports Side by Side */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        
+
         {/* Recent Invoices */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-card overflow-hidden">
           <div className="px-5 py-3.5 border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between bg-slate-50/60 dark:bg-slate-800/40">
@@ -315,13 +315,12 @@ export default function DashboardPage({ setActiveTab, onSelectReport, onSelectBi
                   <div className="min-w-0 pr-3">
                     <div className="flex items-center space-x-2">
                       <span className="font-mono font-semibold text-xs text-blue-600 dark:text-blue-400">{bill.invoiceNumber}</span>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                        bill.paymentStatus === 'Paid'
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${bill.paymentStatus === 'Paid'
                           ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                           : bill.paymentStatus === 'Partially Paid'
-                          ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
-                          : 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
-                      }`}>
+                            ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                            : 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                        }`}>
                         {bill.paymentStatus}
                       </span>
                     </div>
@@ -379,13 +378,12 @@ export default function DashboardPage({ setActiveTab, onSelectReport, onSelectBi
                   <div className="min-w-0 pr-3">
                     <div className="flex items-center space-x-2">
                       <span className="font-mono font-semibold text-xs text-emerald-600 dark:text-emerald-400">{report.reportNumber}</span>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                        report.status === 'Approved'
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${report.status === 'Approved'
                           ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                           : report.status === 'In Progress'
-                          ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
-                          : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
-                      }`}>
+                            ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
+                            : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                        }`}>
                         {report.status}
                       </span>
                     </div>
@@ -465,10 +463,10 @@ export default function DashboardPage({ setActiveTab, onSelectReport, onSelectBi
                     </div>
                     <table className="w-full text-left text-xs border-collapse table-fixed">
                       <colgroup>
-                        <col style={{ width: '38%' }} />
-                        <col style={{ width: '20%' }} />
-                        <col style={{ width: '12%' }} />
-                        <col style={{ width: '20%' }} />
+                        <col style={{ width: '35%' }} />
+                        <col style={{ width: '18%' }} />
+                        <col style={{ width: '13%' }} />
+                        <col style={{ width: '24%' }} />
                         <col style={{ width: '10%' }} />
                       </colgroup>
                       <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-300">
@@ -476,7 +474,7 @@ export default function DashboardPage({ setActiveTab, onSelectReport, onSelectBi
                           <th className="py-1.5 px-3">Test Investigation</th>
                           <th className="py-1.5 px-3">Observed Value</th>
                           <th className="py-1.5 px-3">Units</th>
-                          <th className="py-1.5 px-3">Biological Ref. Range</th>
+                          <th className="py-1.5 px-3 whitespace-nowrap">Biological Ref. Range</th>
                           <th className="py-1.5 px-3 text-center">Status</th>
                         </tr>
                       </thead>
@@ -491,9 +489,8 @@ export default function DashboardPage({ setActiveTab, onSelectReport, onSelectBi
                               <td className="py-1.5 px-3 text-slate-600 font-mono text-[11px]">{r.refRange || '-'}</td>
                               <td className="py-1.5 px-3 text-center">
                                 {isAbnormal ? (
-                                  <span className={`text-[10px] font-black px-1.5 py-0.5 rounded ${
-                                    r.flag === 'High' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'
-                                  }`}>
+                                  <span className={`text-[10px] font-black px-1.5 py-0.5 rounded ${r.flag === 'High' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'
+                                    }`}>
                                     {r.flag}
                                   </span>
                                 ) : (

@@ -11,7 +11,9 @@ import {
   X,
   Eye,
   PlusCircle,
-  Loader2
+  Loader2,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
 
 export default function PatientsPage({ onOrderTestsForPatient, onViewReport }) {
@@ -22,6 +24,8 @@ export default function PatientsPage({ onOrderTestsForPatient, onViewReport }) {
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [patientHistory, setPatientHistory] = useState(null);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [deletingPatient, setDeletingPatient] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -54,6 +58,20 @@ export default function PatientsPage({ onOrderTestsForPatient, onViewReport }) {
       console.error('Failed to load patients:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeletePatient = async () => {
+    if (!deletingPatient) return;
+    try {
+      setDeleting(true);
+      await api.deletePatient(deletingPatient._id);
+      setDeletingPatient(null);
+      fetchPatients();
+    } catch (err) {
+      alert(err.message || 'Failed to delete patient');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -226,6 +244,13 @@ export default function PatientsPage({ onOrderTestsForPatient, onViewReport }) {
                         >
                           <PlusCircle className="w-3.5 h-3.5" />
                           <span>Order Tests</span>
+                        </button>
+                        <button
+                          onClick={() => setDeletingPatient(pat)}
+                          className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
+                          title="Delete patient record"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </td>
@@ -566,6 +591,56 @@ export default function PatientsPage({ onOrderTestsForPatient, onViewReport }) {
                   className="px-3.5 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300 font-medium text-xs hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                 >
                   Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </ModalPortal>
+      )}
+
+      {/* Delete Patient Confirmation Modal */}
+      {deletingPatient && (
+        <ModalPortal isOpen={!!deletingPatient} onClose={() => setDeletingPatient(null)}>
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4 overflow-y-auto"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setDeletingPatient(null);
+            }}
+          >
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 dark:border-slate-800 my-auto p-5 space-y-4">
+              <div className="flex items-center space-x-3 text-rose-600 dark:text-rose-400">
+                <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/40 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white">Delete Patient Record</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">This action cannot be undone.</p>
+                </div>
+              </div>
+
+              <div className="bg-slate-50 dark:bg-slate-800/50 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/80 text-xs text-slate-700 dark:text-slate-300 space-y-1">
+                <div>Are you sure you want to delete patient:</div>
+                <div className="font-bold text-slate-900 dark:text-white text-sm">{deletingPatient.name}</div>
+                <div className="font-mono text-slate-500 dark:text-slate-400">ID: {deletingPatient.patientId} • Phone: {deletingPatient.phone}</div>
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setDeletingPatient(null)}
+                  disabled={deleting}
+                  className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeletePatient}
+                  disabled={deleting}
+                  className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition shadow-xs flex items-center space-x-1.5 disabled:opacity-50"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>{deleting ? 'Deleting...' : 'Delete Patient'}</span>
                 </button>
               </div>
             </div>

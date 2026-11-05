@@ -9,7 +9,9 @@ import {
   Check,
   X,
   ShieldCheck,
-  Loader2
+  Loader2,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
 import PrintModal from '../components/PrintModal';
 import ReportLetterhead from '../components/ReportLetterhead';
@@ -39,6 +41,10 @@ export default function ReportsPage({ selectedReportFromProps }) {
   // Print Report Modal State
   const [printReport, setPrintReport] = useState(null);
 
+  // Delete Report State
+  const [deletingReport, setDeletingReport] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
   useEffect(() => {
     fetchReports();
   }, [searchTerm, statusFilter]);
@@ -60,6 +66,20 @@ export default function ReportsPage({ selectedReportFromProps }) {
       console.error('Failed to load reports:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteReport = async () => {
+    if (!deletingReport) return;
+    try {
+      setDeleting(true);
+      await api.deleteReport(deletingReport._id);
+      setDeletingReport(null);
+      fetchReports();
+    } catch (err) {
+      alert(err.message || 'Failed to delete report');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -345,6 +365,15 @@ export default function ReportsPage({ selectedReportFromProps }) {
                             title="Print Letterhead PDF Report"
                           >
                             <Printer className="w-3.5 h-3.5" />
+                          </button>
+
+                          {/* Delete Report Button */}
+                          <button
+                            onClick={() => setDeletingReport(rpt)}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
+                            title="Delete diagnostic report"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
 
                         </div>
@@ -672,10 +701,10 @@ export default function ReportsPage({ selectedReportFromProps }) {
                   {/* Results Table */}
                   <table className="w-full text-left text-xs border-collapse table-fixed">
                     <colgroup>
-                      <col style={{ width: '38%' }} />
-                      <col style={{ width: '20%' }} />
-                      <col style={{ width: '12%' }} />
-                      <col style={{ width: '20%' }} />
+                      <col style={{ width: '35%' }} />
+                      <col style={{ width: '18%' }} />
+                      <col style={{ width: '13%' }} />
+                      <col style={{ width: '24%' }} />
                       <col style={{ width: '10%' }} />
                     </colgroup>
                     <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-300">
@@ -683,7 +712,7 @@ export default function ReportsPage({ selectedReportFromProps }) {
                         <th className="py-1.5 px-3">Test Investigation</th>
                         <th className="py-1.5 px-3">Observed Value</th>
                         <th className="py-1.5 px-3">Units</th>
-                        <th className="py-1.5 px-3">Biological Ref. Range</th>
+                        <th className="py-1.5 px-3 whitespace-nowrap">Biological Ref. Range</th>
                         <th className="py-1.5 px-3 text-center">Status</th>
                       </tr>
                     </thead>
@@ -751,6 +780,57 @@ export default function ReportsPage({ selectedReportFromProps }) {
           </ReportLetterhead>
         )}
       </PrintModal>
+
+      {/* Delete Report Confirmation Modal */}
+      {deletingReport && (
+        <ModalPortal isOpen={!!deletingReport} onClose={() => setDeletingReport(null)}>
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4 overflow-y-auto"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setDeletingReport(null);
+            }}
+          >
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 dark:border-slate-800 my-auto p-5 space-y-4">
+              <div className="flex items-center space-x-3 text-rose-600 dark:text-rose-400">
+                <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/40 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white">Delete Diagnostic Report</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">This action cannot be undone.</p>
+                </div>
+              </div>
+
+              <div className="bg-slate-50 dark:bg-slate-800/50 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/80 text-xs text-slate-700 dark:text-slate-300 space-y-1">
+                <div>Are you sure you want to delete Diagnostic Report:</div>
+                <div className="font-mono font-bold text-blue-600 dark:text-blue-400 text-sm">#{deletingReport.reportNumber}</div>
+                <div>Patient: <strong className="text-slate-900 dark:text-white">{deletingReport.patientSnapshot?.name}</strong></div>
+                <div className="text-slate-500 dark:text-slate-400">Tests: {(deletingReport.tests || []).map(t => t.testName).join(', ')}</div>
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setDeletingReport(null)}
+                  disabled={deleting}
+                  className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteReport}
+                  disabled={deleting}
+                  className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition shadow-xs flex items-center space-x-1.5 disabled:opacity-50"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>{deleting ? 'Deleting...' : 'Delete Report'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </ModalPortal>
+      )}
 
     </div>
   );

@@ -25,6 +25,8 @@ async function request(endpoint, options = {}) {
 export const api = {
   // Auth
   login: (credentials) => request('/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
+  register: (user) => request('/auth/register', { method: 'POST', body: JSON.stringify(user) }),
+  getSetupStatus: () => request('/auth/setup-status'),
   getMe: () => request('/auth/me'),
   getUsers: () => request('/auth/users'),
   createUser: (user) => request('/auth/users', { method: 'POST', body: JSON.stringify(user) }),
@@ -42,6 +44,7 @@ export const api = {
     const q = new URLSearchParams(params).toString();
     return request(`/tests?${q}`);
   },
+  syncTariff: () => request('/tests/sync-tariff', { method: 'POST' }),
   getTestById: (id) => request(`/tests/${id}`),
   createTest: (test) => request('/tests', { method: 'POST', body: JSON.stringify(test) }),
   updateTest: (id, test) => request(`/tests/${id}`, { method: 'PUT', body: JSON.stringify(test) }),
@@ -56,6 +59,7 @@ export const api = {
   createBill: (billData) => request('/billing', { method: 'POST', body: JSON.stringify(billData) }),
   addPayment: (id, paymentData) => request(`/billing/${id}/payments`, { method: 'POST', body: JSON.stringify(paymentData) }),
   cancelBill: (id, reason) => request(`/billing/${id}/cancel`, { method: 'POST', body: JSON.stringify({ reason }) }),
+  deleteBill: (id) => request(`/billing/${id}`, { method: 'DELETE' }),
 
   // Reports
   getReports: (params = {}) => {
@@ -66,6 +70,7 @@ export const api = {
   updateReportResults: (id, data) => request(`/reports/${id}/results`, { method: 'PUT', body: JSON.stringify(data) }),
   approveReport: (id, data) => request(`/reports/${id}/approve`, { method: 'PUT', body: JSON.stringify(data) }),
   deliverReport: (id) => request(`/reports/${id}/deliver`, { method: 'PUT' }),
+  deleteReport: (id) => request(`/reports/${id}`, { method: 'DELETE' }),
 
   // Dashboard
   getDashboardStats: () => request('/dashboard/stats'),
@@ -74,4 +79,3 @@ export const api = {
   getConfig: () => request('/config'),
   updateConfig: (config) => request('/config', { method: 'PUT', body: JSON.stringify(config) })
 };
-

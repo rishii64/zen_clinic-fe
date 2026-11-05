@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth, DEMO_USERS } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import {
   Activity,
   LogOut,
   Clock,
-  Sparkles,
-  ChevronDown,
-  UserCheck
+  Sun,
+  Moon,
+  Menu,
+  X
 } from 'lucide-react';
 
-export default function Navbar() {
-  const { user, logout, switchRole, clinicConfig } = useAuth();
+export default function Navbar({ mobileMenuOpen, setMobileMenuOpen }) {
+  const { user, logout, clinicConfig } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const [timeStr, setTimeStr] = useState('');
-  const [showRoleMenu, setShowRoleMenu] = useState(false);
 
   useEffect(() => {
     const updateTime = () => {
@@ -22,7 +24,6 @@ export default function Navbar() {
           weekday: 'short',
           day: 'numeric',
           month: 'short',
-          year: 'numeric'
         }) + ' • ' + now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
       );
     };
@@ -31,110 +32,83 @@ export default function Navbar() {
     return () => clearInterval(interval);
   }, []);
 
-  const getRoleChipStyle = (role) => {
-    switch (role) {
-      case 'Admin':
-        return 'bg-[#E8DEF8] text-[#4A4458] border border-[#CAC4D0]';
-      case 'Doctor':
-        return 'bg-[#CEEAD6] text-[#0D652D] border border-[#A8DAB5]';
-      case 'Technician':
-        return 'bg-[#FFE082] text-[#8C4A00] border border-[#FFD54F]';
-      case 'Receptionist':
-        return 'bg-[#C2E7FF] text-[#004A77] border border-[#7FCFFF]';
-      default:
-        return 'bg-[#F0F4F9] text-[#444746] border border-[#C4C7C5]';
-    }
-  };
-
   return (
-    <header className="bg-white border-b border-[#E0E2EC] sticky top-0 z-30 no-print shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
-      <div className="px-6 py-2.5 flex items-center justify-between">
+    <header className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 sticky top-0 z-30 shrink-0 no-print transition-colors duration-200">
+      <div className="px-4 sm:px-6 py-2.5 flex items-center justify-between">
         
-        {/* Left: Material Brand Identity */}
-        <div className="flex items-center space-x-3.5">
-          <div className="w-10 h-10 rounded-2xl bg-[#D3E3FD] text-[#0B57D0] flex items-center justify-center shadow-sm">
+        {/* Left: Mobile Toggle & Brand Identity */}
+        <div className="flex items-center space-x-3">
+          {/* Mobile Hamburger Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 md:hidden transition-colors"
+            aria-label="Toggle navigation menu"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+
+          {/* Brand Icon */}
+          <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/40 flex items-center justify-center shrink-0">
             <Activity className="w-5 h-5" />
           </div>
+
           <div>
             <div className="flex items-center space-x-2">
-              <span className="font-extrabold text-lg text-[#1F1F1F] tracking-tight">
-                {clinicConfig?.clinicName || 'RAJ JANCH GHAR'}
+              <span className="font-bold text-base text-slate-900 dark:text-white tracking-tight">
+                {clinicConfig?.clinicName || 'Zen Clinic'}
               </span>
-              <span className="text-[11px] bg-[#FFDAD6] text-[#93000A] font-bold px-2 py-0.5 rounded-full border border-[#FFB4AB]">
-                {clinicConfig?.regNumber || 'Reg.No - 430/2022'}
+              <span className="hidden sm:inline-block text-[10px] font-semibold tracking-wide uppercase px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                {clinicConfig?.regNumber || 'Diagnostic Lab'}
               </span>
             </div>
-            <p className="text-[11px] text-[#444746] font-medium">
-              Diagnostic Pathology & Invoicing Management
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium hidden sm:block">
+              Pathology & Clinical ERP
             </p>
           </div>
         </div>
 
-        {/* Center: Live Clinic Time (Material Tonal Pill) */}
-        <div className="hidden lg:flex items-center space-x-2 text-xs font-medium text-[#444746] bg-[#F0F4F9] px-4 py-1.5 rounded-full border border-[#E0E2EC]">
-          <Clock className="w-3.5 h-3.5 text-[#0B57D0]" />
+        {/* Center: Live Clinic Time */}
+        <div className="hidden lg:flex items-center space-x-2 text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100/80 dark:bg-slate-800/60 px-3.5 py-1.5 rounded-full border border-slate-200/60 dark:border-slate-700/60">
+          <Clock className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
           <span>{timeStr}</span>
         </div>
 
-        {/* Right: Material 3 Role Switcher + User Profile */}
-        <div className="flex items-center space-x-3">
+        {/* Right: Theme Toggle & User Profile */}
+        <div className="flex items-center space-x-2 sm:space-x-3">
           
-          {/* Quick 1-Click Role Switcher (Material Filter Chip / Menu) */}
-          <div className="relative">
-            <button
-              onClick={() => setShowRoleMenu(!showRoleMenu)}
-              className="flex items-center space-x-2 bg-[#F0F4F9] hover:bg-[#E3E8EF] border border-[#C4C7C5] px-3.5 py-1.5 rounded-full text-xs font-semibold text-[#1F1F1F] transition shadow-sm"
-              title="Click to switch role (Admin, Doctor, Technician, Receptionist)"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-[#0B57D0]" />
-              <span>Role: <strong className="text-[#0B57D0]">{user?.role || 'Guest'}</strong></span>
-              <ChevronDown className="w-3.5 h-3.5 text-[#444746]" />
-            </button>
-
-            {showRoleMenu && (
-              <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-m3-3 border border-[#E0E2EC] py-2 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
-                <div className="px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-[#74777F] border-b border-[#F0F4F9]">
-                  Switch Role (Instant 1-Click)
-                </div>
-                {DEMO_USERS.map((demo) => (
-                  <button
-                    key={demo.role}
-                    onClick={() => {
-                      switchRole(demo.role);
-                      setShowRoleMenu(false);
-                    }}
-                    className={`w-full text-left px-4 py-2.5 text-xs flex items-center justify-between hover:bg-[#F0F4F9] transition ${
-                      user?.role === demo.role ? 'bg-[#E8F0FE] font-bold text-[#0B57D0]' : 'text-[#1F1F1F]'
-                    }`}
-                  >
-                    <span>{demo.label}</span>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${getRoleChipStyle(demo.role)}`}>
-                      {demo.role}
-                    </span>
-                  </button>
-                ))}
-              </div>
+          {/* Dark Mode Toggle */}
+          <button
+            onClick={toggleTheme}
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 transition-all focus:outline-none"
+            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {isDark ? (
+              <Sun className="w-4 h-4 text-amber-400 hover:rotate-45 transition-transform" />
+            ) : (
+              <Moon className="w-4 h-4 text-slate-600 hover:-rotate-12 transition-transform" />
             )}
-          </div>
+          </button>
 
           {/* User Profile */}
-          <div className="flex items-center space-x-2.5 pl-2 border-l border-[#E0E2EC]">
-            <div className="w-9 h-9 rounded-full bg-[#E8DEF8] text-[#4A4458] font-bold text-xs flex items-center justify-center shadow-sm">
+          <div className="flex items-center space-x-2.5 pl-2 sm:border-l border-slate-200 dark:border-slate-800">
+            <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center justify-center border border-slate-200 dark:border-slate-700 shrink-0">
               {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
             </div>
+            
             <div className="hidden sm:block text-left leading-tight">
-              <div className="text-xs font-bold text-[#1F1F1F]">
+              <div className="text-xs font-semibold text-slate-900 dark:text-slate-100">
                 {user?.name || 'Staff User'}
               </div>
-              <div className="text-[10px] text-[#74777F]">
+              <div className="text-[10px] text-slate-500 dark:text-slate-400">
                 {user?.designation || user?.role || 'Staff'}
               </div>
             </div>
 
             <button
               onClick={logout}
-              title="Logout"
-              className="p-2 text-[#444746] hover:text-[#BA1A1A] hover:bg-[#FFDAD6]/50 rounded-full transition"
+              title="Sign Out"
+              className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition-colors ml-1"
             >
               <LogOut className="w-4 h-4" />
             </button>

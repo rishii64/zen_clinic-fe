@@ -3,13 +3,6 @@ import { api } from '../services/api';
 
 const AuthContext = createContext();
 
-export const DEMO_USERS = [
-  { role: 'Admin', email: 'admin@rajjanchghar.com', label: 'Admin (Full Access)' },
-  { role: 'Doctor', email: 'doctor@rajjanchghar.com', label: 'Doctor (Dr. R.K. MANDAL)' },
-  { role: 'Technician', email: 'tech@rajjanchghar.com', label: 'Technician (Mr. R.K. Raut)' },
-  { role: 'Receptionist', email: 'reception@rajjanchghar.com', label: 'Receptionist (Front Desk)' }
-];
-
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('zenxnic_token') || null);
@@ -63,27 +56,21 @@ export const AuthProvider = ({ children }) => {
     throw new Error(res.message || 'Login failed');
   };
 
+  const register = async (userData) => {
+    const res = await api.register(userData);
+    if (res.success) {
+      localStorage.setItem('zenxnic_token', res.token);
+      setToken(res.token);
+      setUser(res.user);
+      return res.user;
+    }
+    throw new Error(res.message || 'Registration failed');
+  };
+
   const logout = () => {
     localStorage.removeItem('zenxnic_token');
     setToken(null);
     setUser(null);
-  };
-
-  const switchRole = async (targetRole) => {
-    const demo = DEMO_USERS.find(d => d.role === targetRole) || DEMO_USERS[0];
-    try {
-      setLoading(true);
-      const res = await api.login({ email: demo.email, password: 'admin123' });
-      if (res.success) {
-        localStorage.setItem('zenxnic_token', res.token);
-        setToken(res.token);
-        setUser(res.user);
-      }
-    } catch (err) {
-      console.error('Switch role error:', err);
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
@@ -95,8 +82,8 @@ export const AuthProvider = ({ children }) => {
         clinicConfig,
         reloadConfig: fetchConfig,
         login,
+        register,
         logout,
-        switchRole,
         isAuthenticated: !!user
       }}
     >
@@ -106,4 +93,3 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
-

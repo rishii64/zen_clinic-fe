@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import PrintModal from '../components/PrintModal';
 import ReportLetterhead from '../components/ReportLetterhead';
+import DiagnosticReportView from '../components/DiagnosticReportView';
 import InvoiceTemplate from '../components/InvoiceTemplate';
 
 export default function DashboardPage({ setActiveTab, onSelectReport, onSelectBill }) {
@@ -429,106 +430,17 @@ export default function DashboardPage({ setActiveTab, onSelectReport, onSelectBi
         onClose={() => setPrintDoc(null)}
         title={printDoc?.type === 'bill' ? `Print Invoice: ${printDoc?.data?.invoiceNumber}` : `Diagnostic Report: ${printDoc?.data?.reportNumber}`}
         documentType={printDoc?.type || 'report'}
+        reportNumber={printDoc?.data?.reportNumber || printDoc?.data?.invoiceNumber}
       >
         {(showLetterhead) => (
           printDoc?.type === 'bill' ? (
             <InvoiceTemplate bill={printDoc.data} config={clinicConfig} showLetterhead={showLetterhead} />
           ) : (
-            <ReportLetterhead config={clinicConfig} report={printDoc?.data} showLetterhead={showLetterhead}>
-              <div className="text-xs space-y-4">
-                {/* Patient Summary Header inside Report */}
-                <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200 text-slate-800">
-                  <div>
-                    <div><strong>Patient:</strong> {printDoc?.data?.patientSnapshot?.name}</div>
-                    <div><strong>ID:</strong> {printDoc?.data?.patientSnapshot?.patientId}</div>
-                    <div><strong>Age/Sex:</strong> {printDoc?.data?.patientSnapshot?.age} {printDoc?.data?.patientSnapshot?.ageUnit} / {printDoc?.data?.patientSnapshot?.gender}</div>
-                  </div>
-                  <div className="text-right">
-                    <div><strong>Report No:</strong> {printDoc?.data?.reportNumber}</div>
-                    <div><strong>Ref. Doctor:</strong> {printDoc?.data?.referringDoctor}</div>
-                    <div><strong>Date:</strong> {new Date().toLocaleDateString('en-IN')}</div>
-                  </div>
-                </div>
-
-                {/* Tests Table */}
-                {(printDoc?.data?.tests || []).map((t, idx) => (
-                  <div key={idx} className="border border-slate-300 rounded overflow-hidden mb-3">
-                    <div className="bg-slate-200 border-b border-slate-300 px-3 py-1.5 flex justify-between items-center">
-                      <span className="font-extrabold text-blue-900 uppercase tracking-wide">
-                        {t.testName}
-                      </span>
-                      <span className="text-[10px] text-slate-600 font-medium">
-                        Method: {t.method || 'Standard Clinical Pathology Method'}
-                      </span>
-                    </div>
-                    <table className="w-full text-left text-xs border-collapse table-fixed">
-                      <colgroup>
-                        <col style={{ width: '35%' }} />
-                        <col style={{ width: '18%' }} />
-                        <col style={{ width: '13%' }} />
-                        <col style={{ width: '24%' }} />
-                        <col style={{ width: '10%' }} />
-                      </colgroup>
-                      <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-300">
-                        <tr>
-                          <th className="py-1.5 px-3">Test Investigation</th>
-                          <th className="py-1.5 px-3">Observed Value</th>
-                          <th className="py-1.5 px-3">Units</th>
-                          <th className="py-1.5 px-3 whitespace-nowrap">Biological Ref. Range</th>
-                          <th className="py-1.5 px-3 text-center">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-200">
-                        {(t.results || []).map((r, rIdx) => {
-                          const isAbnormal = r.flag && r.flag !== 'Normal';
-                          return (
-                            <tr key={rIdx} className={isAbnormal ? 'bg-amber-50/70' : ''}>
-                              <td className="py-1.5 px-3 text-slate-900 font-medium">{r.paramName}</td>
-                              <td className="py-1.5 px-3 font-bold font-mono text-slate-950">{r.resultValue || '---'}</td>
-                              <td className="py-1.5 px-3 text-slate-600 font-mono text-[11px]">{r.unit || '-'}</td>
-                              <td className="py-1.5 px-3 text-slate-600 font-mono text-[11px]">{r.refRange || '-'}</td>
-                              <td className="py-1.5 px-3 text-center">
-                                {isAbnormal ? (
-                                  <span className={`text-[10px] font-black px-1.5 py-0.5 rounded ${r.flag === 'High' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'
-                                    }`}>
-                                    {r.flag}
-                                  </span>
-                                ) : (
-                                  <span className="text-slate-400 text-[10px]">Normal</span>
-                                )}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                ))}
-
-                {/* Impressions & Notes */}
-                {(printDoc?.data?.overallImpression || printDoc?.data?.doctorRemarks) && (
-                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs space-y-1">
-                    {printDoc.data.overallImpression && (
-                      <div>
-                        <strong className="text-slate-900">Impression:</strong>
-                        <span className="text-slate-800 ml-1.5">{printDoc.data.overallImpression}</span>
-                      </div>
-                    )}
-                    {printDoc.data.doctorRemarks && (
-                      <div>
-                        <strong className="text-slate-900">Clinical Advice:</strong>
-                        <span className="text-slate-800 ml-1.5">{printDoc.data.doctorRemarks}</span>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* End of Report Divider */}
-                <div className="text-center pt-2 text-[10px] font-mono text-slate-400 tracking-widest uppercase">
-                  *** END OF DIAGNOSTIC REPORT ***
-                </div>
-              </div>
-            </ReportLetterhead>
+            <DiagnosticReportView
+              report={printDoc?.data}
+              clinicConfig={clinicConfig}
+              showLetterhead={showLetterhead}
+            />
           )
         )}
       </PrintModal>

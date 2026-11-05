@@ -15,7 +15,9 @@ import {
 } from 'lucide-react';
 import PrintModal from '../components/PrintModal';
 import ReportLetterhead from '../components/ReportLetterhead';
+import DiagnosticReportView from '../components/DiagnosticReportView';
 import ModalPortal from '../components/ModalPortal';
+import { evaluateResultFlag, generateMedicalImpression } from '../data/reportTemplates';
 
 export default function ReportsPage({ selectedReportFromProps }) {
   const { clinicConfig } = useAuth();
@@ -95,28 +97,7 @@ export default function ReportsPage({ selectedReportFromProps }) {
     const updated = [...editingTests];
     const item = updated[testIdx].results[resultIdx];
     item.resultValue = value;
-
-    // Auto-flagging logic for numeric tests
-    const num = parseFloat(value);
-    if (!isNaN(num) && item.refRange) {
-      const matchRange = item.refRange.match(/([0-9.]+)\s*-\s*([0-9.]+)/);
-      if (matchRange) {
-        const min = parseFloat(matchRange[1]);
-        const max = parseFloat(matchRange[2]);
-        if (num < min) {
-          item.flag = 'Low';
-        } else if (num > max) {
-          item.flag = 'High';
-        } else {
-          item.flag = 'Normal';
-        }
-      }
-    } else if (value.toLowerCase().includes('positive') || value.toLowerCase().includes('reactive')) {
-      item.flag = 'Positive';
-    } else if (value.toLowerCase().includes('negative') || value.toLowerCase().includes('non-reactive')) {
-      item.flag = 'Normal';
-    }
-
+    item.flag = evaluateResultFlag(value, item.refRange);
     setEditingTests(updated);
   };
 
@@ -506,9 +487,19 @@ export default function ReportsPage({ selectedReportFromProps }) {
                 {/* Impressions and Remarks */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                   <div>
-                    <label className="block font-medium text-slate-800 dark:text-slate-200 mb-1">
-                      Pathological Impression / Summary
-                    </label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block font-medium text-slate-800 dark:text-slate-200">
+                        Pathological Impression / Summary
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setOverallImpression(generateMedicalImpression(editingTests))}
+                        className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+                        title="Auto-suggest medical impression based on tested parameters"
+                      >
+                        ⚡ Auto-Suggest
+                      </button>
+                    </div>
                     <textarea
                       rows="3"
                       value={overallImpression}
@@ -658,126 +649,14 @@ export default function ReportsPage({ selectedReportFromProps }) {
         onClose={() => setPrintReport(null)}
         title={`Diagnostic Laboratory Report: ${printReport?.reportNumber}`}
         documentType="diagnostic_report"
+        reportNumber={printReport?.reportNumber}
       >
         {(showLetterhead) => (
-          <ReportLetterhead
-            config={clinicConfig}
+          <DiagnosticReportView
             report={printReport}
+            clinicConfig={clinicConfig}
             showLetterhead={showLetterhead}
-          >
-            <div className="space-y-4 text-xs font-sans text-slate-800">
-              
-              {/* Patient Bar */}
-              <div className="grid grid-cols-2 gap-4 bg-slate-50/80 p-3 rounded-lg border border-slate-300 leading-relaxed">
-                <div className="space-y-0.5">
-                  <div><strong className="text-slate-500">Patient Name:</strong> <span className="font-bold text-slate-950 text-sm">{printReport?.patientSnapshot?.name}</span></div>
-                  <div><strong className="text-slate-500">Patient ID:</strong> <span className="font-mono font-semibold">{printReport?.patientSnapshot?.patientId}</span></div>
-                  <div><strong className="text-slate-500">Age / Gender:</strong> {printReport?.patientSnapshot?.age} {printReport?.patientSnapshot?.ageUnit} / {printReport?.patientSnapshot?.gender}</div>
-                  <div><strong className="text-slate-500">Phone:</strong> {printReport?.patientSnapshot?.phone}</div>
-                </div>
-
-                <div className="text-right space-y-0.5">
-                  <div><strong className="text-slate-500">Report No:</strong> <span className="font-mono font-bold text-blue-900">{printReport?.reportNumber}</span></div>
-                  <div><strong className="text-slate-500">Ref. Doctor:</strong> <span className="font-semibold text-slate-900">{printReport?.referringDoctor || 'Dr. R.K. MANDAL'}</span></div>
-                  <div><strong className="text-slate-500">Sample Date:</strong> {new Date(printReport?.sampleCollectedAt || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
-                  <div><strong className="text-slate-500">Reporting Date:</strong> {new Date(printReport?.reportedAt || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
-                </div>
-              </div>
-
-              {/* Tests Results Panels */}
-              {(printReport?.tests || []).map((testItem, tIdx) => (
-                <div key={tIdx} className="border border-slate-300 rounded overflow-hidden mb-4">
-                  
-                  {/* Test Title Header */}
-                  <div className="bg-slate-200 border-b border-slate-300 px-3 py-1.5 flex justify-between items-center">
-                    <span className="font-extrabold text-blue-900 uppercase tracking-wide">
-                      {testItem.testName}
-                    </span>
-                    <span className="text-[10px] text-slate-600 font-medium">
-                      Method: {testItem.method || 'Standard Clinical Pathology Method'}
-                    </span>
-                  </div>
-
-                  {/* Results Table */}
-                  <table className="w-full text-left text-xs border-collapse table-fixed">
-                    <colgroup>
-                      <col style={{ width: '35%' }} />
-                      <col style={{ width: '18%' }} />
-                      <col style={{ width: '13%' }} />
-                      <col style={{ width: '24%' }} />
-                      <col style={{ width: '10%' }} />
-                    </colgroup>
-                    <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-300">
-                      <tr>
-                        <th className="py-1.5 px-3">Test Investigation</th>
-                        <th className="py-1.5 px-3">Observed Value</th>
-                        <th className="py-1.5 px-3">Units</th>
-                        <th className="py-1.5 px-3 whitespace-nowrap">Biological Ref. Range</th>
-                        <th className="py-1.5 px-3 text-center">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200">
-                      {(testItem.results || []).map((res, rIdx) => {
-                        const isAbnormal = res.flag && res.flag !== 'Normal';
-                        return (
-                          <tr key={rIdx} className={isAbnormal ? 'bg-amber-50/70' : ''}>
-                            <td className="py-1.5 px-3 text-slate-900 font-medium">
-                              {res.paramName}
-                            </td>
-                            <td className="py-1.5 px-3 font-bold font-mono text-slate-950">
-                              {res.resultValue || '---'}
-                            </td>
-                            <td className="py-1.5 px-3 text-slate-600 font-mono text-[11px]">
-                              {res.unit || '-'}
-                            </td>
-                            <td className="py-1.5 px-3 text-slate-600 font-mono text-[11px]">
-                              {res.refRange || '-'}
-                            </td>
-                            <td className="py-1.5 px-3 text-center">
-                              {isAbnormal ? (
-                                <span className={`text-[10px] font-black px-1.5 py-0.5 rounded ${
-                                  res.flag === 'High' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'
-                                }`}>
-                                  {res.flag}
-                                </span>
-                              ) : (
-                                <span className="text-slate-400 text-[10px]">Normal</span>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-
-                </div>
-              ))}
-
-              {/* Impressions & Notes */}
-              {(printReport?.overallImpression || printReport?.doctorRemarks) && (
-                <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs space-y-1">
-                  {printReport.overallImpression && (
-                    <div>
-                      <strong className="text-slate-900">Impression:</strong>
-                      <span className="text-slate-800 ml-1.5">{printReport.overallImpression}</span>
-                    </div>
-                  )}
-                  {printReport.doctorRemarks && (
-                    <div>
-                      <strong className="text-slate-900">Clinical Advice:</strong>
-                      <span className="text-slate-800 ml-1.5">{printReport.doctorRemarks}</span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* End of Report Divider */}
-              <div className="text-center pt-2 text-[10px] font-mono text-slate-400 tracking-widest uppercase">
-                *** END OF DIAGNOSTIC REPORT ***
-              </div>
-
-            </div>
-          </ReportLetterhead>
+          />
         )}
       </PrintModal>
 

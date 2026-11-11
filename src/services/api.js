@@ -26,6 +26,8 @@ export const api = {
   // Auth
   login: (credentials) => request('/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
   register: (user) => request('/auth/register', { method: 'POST', body: JSON.stringify(user) }),
+  requestPasswordReset: (email) => request('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }),
+  resetPassword: (data) => request('/auth/reset-password', { method: 'POST', body: JSON.stringify(data) }),
   getSetupStatus: () => request('/auth/setup-status'),
   getMe: () => request('/auth/me'),
   getUsers: () => request('/auth/users'),

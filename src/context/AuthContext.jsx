@@ -67,6 +67,10 @@ export const AuthProvider = ({ children }) => {
     throw new Error(res.message || 'Registration failed');
   };
 
+  const requestPasswordReset = async (email) => api.requestPasswordReset(email);
+
+  const resetPassword = async (data) => api.resetPassword(data);
+
   const logout = () => {
     localStorage.removeItem('zenxnic_token');
     setToken(null);
@@ -83,6 +87,8 @@ export const AuthProvider = ({ children }) => {
         reloadConfig: fetchConfig,
         login,
         register,
+        requestPasswordReset,
+        resetPassword,
         logout,
         isAuthenticated: !!user
       }}

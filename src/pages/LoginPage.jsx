@@ -22,12 +22,16 @@ import {
 } from 'lucide-react';
 
 export default function LoginPage() {
-  const { login, register, clinicConfig } = useAuth();
+  const { login, register, requestPasswordReset, resetPassword, clinicConfig } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [isForgotMode, setIsForgotMode] = useState(false);
+  const [forgotStep, setForgotStep] = useState('email');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [forgotOtp, setForgotOtp] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -50,7 +54,22 @@ export default function LoginPage() {
     setSuccessMsg('');
     try {
       setLoading(true);
-      if (isRegisterMode) {
+      if (isForgotMode && forgotStep === 'email') {
+        const response = await requestPasswordReset(email);
+        setForgotStep('otp');
+        setSuccessMsg(response.message);
+      } else if (isForgotMode) {
+        if (password !== confirmPassword) {
+          throw new Error('Passwords do not match.');
+        }
+        const response = await resetPassword({ email, otp: forgotOtp, password });
+        setIsForgotMode(false);
+        setForgotStep('email');
+        setPassword('');
+        setForgotOtp('');
+        setConfirmPassword('');
+        setSuccessMsg(response.message);
+      } else if (isRegisterMode) {
         await register({ name, email, password });
       } else {
         await login(email, password);
@@ -208,20 +227,24 @@ export default function LoginPage() {
             {/* Card Header Title */}
             <div className="text-center mb-6">
               <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                {isRegisterMode ? 'Create Staff Account' : 'Welcome Back'}
+                {isForgotMode ? 'Reset Your Password' : isRegisterMode ? 'Create Staff Account' : 'Welcome Back'}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                {isRegisterMode
+                {isForgotMode
+                  ? forgotStep === 'email'
+                    ? 'We will send a verification code to your registered email address.'
+                    : `Enter the verification code sent to ${email} and choose a new password.`
+                  : isRegisterMode
                   ? 'Register a new staff or technologist profile'
                   : 'Enter your credentials to access the laboratory workspace'}
               </p>
             </div>
 
             {/* Mode Switcher Tabs */}
-            <div className="flex bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl mb-5 border border-slate-200/60 dark:border-slate-700/60 select-none">
+            {!isForgotMode && <div className="flex bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl mb-5 border border-slate-200/60 dark:border-slate-700/60 select-none">
               <button
                 type="button"
-                onClick={() => { setIsRegisterMode(false); setError(''); setSuccessMsg(''); }}
+                onClick={() => { setIsRegisterMode(false); setIsForgotMode(false); setError(''); setSuccessMsg(''); }}
                 className={`flex-1 py-2 rounded-lg font-bold text-xs flex items-center justify-center space-x-1.5 transition-all duration-150 ${
                   !isRegisterMode
                     ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-xs'
@@ -233,7 +256,7 @@ export default function LoginPage() {
               </button>
               <button
                 type="button"
-                onClick={() => { setIsRegisterMode(true); setError(''); setSuccessMsg(''); }}
+                onClick={() => { setIsRegisterMode(true); setIsForgotMode(false); setError(''); setSuccessMsg(''); }}
                 className={`flex-1 py-2 rounded-lg font-bold text-xs flex items-center justify-center space-x-1.5 transition-all duration-150 ${
                   isRegisterMode
                     ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-xs'
@@ -243,7 +266,7 @@ export default function LoginPage() {
                 <UserPlus className="w-3.5 h-3.5" />
                 <span>Create Account</span>
               </button>
-            </div>
+            </div>}
 
             {/* 1-Click Demo Login Pill (Only in Sign In mode) */}
             {/* {!isRegisterMode && (
@@ -257,7 +280,7 @@ export default function LoginPage() {
                   <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform" />
                   <span>Auto-Fill Demo Staff Credentials</span>
                 </button>
-              </div>
+              </div>}
             )} */}
 
             {/* Error Message Alert */}
@@ -280,7 +303,7 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
               
               {/* Full Name (Registration Only) */}
-              {isRegisterMode && (
+              {isRegisterMode && !isForgotMode && (
                 <div>
                   <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                     Full Name & Title
@@ -317,16 +340,78 @@ export default function LoginPage() {
                 </div>
               </div>
 
+              {isForgotMode && forgotStep === 'otp' && (
+                <>
+                  <div>
+                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                      Verification Code
+                    </label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      pattern="[0-9]{6}"
+                      maxLength={6}
+                      required
+                      placeholder="6-digit code"
+                      value={forgotOtp}
+                      onChange={(e) => setForgotOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/70 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 text-slate-900 dark:text-white font-medium text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                      New Password
+                    </label>
+                    <input
+                      type="password"
+                      autoComplete="new-password"
+                      minLength={8}
+                      required
+                      placeholder="At least 8 characters"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/70 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 text-slate-900 dark:text-white font-medium text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                      Confirm New Password
+                    </label>
+                    <input
+                      type="password"
+                      autoComplete="new-password"
+                      minLength={8}
+                      required
+                      placeholder="Enter the new password again"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/70 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 text-slate-900 dark:text-white font-medium text-xs"
+                    />
+                  </div>
+                </>
+              )}
+
               {/* Password with Eye Toggle */}
-              <div>
+              {!isForgotMode && <div>
                 <div className="flex justify-between items-center mb-1.5">
                   <label className="block font-semibold text-slate-700 dark:text-slate-300">
                     Password
                   </label>
                   {!isRegisterMode && (
-                    <span className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline cursor-pointer select-none">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsForgotMode(true);
+                        setForgotStep('email');
+                        setError('');
+                        setSuccessMsg('');
+                        setPassword('');
+                      }}
+                      className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline cursor-pointer select-none"
+                    >
                       Forgot?
-                    </span>
+                    </button>
                   )}
                 </div>
                 <div className="relative">
@@ -348,7 +433,7 @@ export default function LoginPage() {
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-              </div>
+              </div>}
 
               {/* Remember Me Checkbox */}
               {/* <div className="flex items-center justify-between pt-1">
@@ -371,9 +456,30 @@ export default function LoginPage() {
                 disabled={loading}
                 className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all duration-150 flex items-center justify-center space-x-2 disabled:opacity-50 text-xs mt-2"
               >
-                <span>{loading ? 'Authenticating...' : (isRegisterMode ? 'Create Account & Access Portal' : 'Sign In to Laboratory')}</span>
+                <span>{loading
+                  ? isForgotMode && forgotStep === 'email' ? 'Sending code...' : isForgotMode ? 'Resetting password...' : 'Authenticating...'
+                  : isForgotMode
+                    ? forgotStep === 'email' ? 'Send Verification Code' : 'Verify Code & Reset Password'
+                    : isRegisterMode ? 'Create Account & Access Portal' : 'Sign In to Laboratory'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
+              {isForgotMode && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsForgotMode(false);
+                    setForgotStep('email');
+                    setError('');
+                    setSuccessMsg('');
+                    setPassword('');
+                    setForgotOtp('');
+                    setConfirmPassword('');
+                  }}
+                  className="w-full text-xs font-semibold text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400"
+                >
+                  Back to sign in
+                </button>
+              )}
             </form>
 
             {/* Medico-Legal Security Note */}

@@ -15,7 +15,7 @@ export default function ReportLetterhead({
     regNumber: config?.regNumber || 'Reg No - 430/2022',
     address: config?.address || 'MAIN ROAD NETAJI CHOWK SAHARGHAT',
     phone: config?.phone || '',
-    email: config?.email || '',
+    email: config?.email || 'rajjanchghar@gmail.com',
     doctorDetails: {
       name: config?.doctorDetails?.name || 'Dr. R.K. MANDAL',
       qualifications: config?.doctorDetails?.qualifications || 'M.B.B.S',
@@ -271,6 +271,9 @@ export default function ReportLetterhead({
                     <td className="w-[42%] text-center align-middle text-[9px] font-semibold text-slate-900 leading-tight">
                       <div>1. Invalid for medico legal purpose</div>
                       <div>2. Contain of this report is only an opinion not a diagnostic purpose</div>
+                      <div className="text-blue-900 font-bold mt-0.5 tracking-tight">
+                        Email: {clinic.email || 'rajjanchghar@gmail.com'}
+                      </div>
                     </td>
                     <td className="w-[25%] text-right align-middle leading-tight">
                       {totalPages > 1 && (

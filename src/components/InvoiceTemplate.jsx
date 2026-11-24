@@ -22,26 +22,29 @@ function numberToWordsIndian(num) {
 }
 
 // Invoice items pagination helper to guarantee zero row slicing
-function paginateInvoiceItems(items) {
+function paginateInvoiceItems(items, topMm = 40, bottomMm = 16) {
   if (!items || items.length === 0) return [[]];
 
-  // Up to 12 items comfortably fit on a single page with all financial summaries & QR code
-  if (items.length <= 12) {
+  // Dynamic row capacity calculation based on configured top and bottom letterhead heights
+  // Available single page items height: 297mm - topMm - bottomMm - 20mm (page padding) - 34mm (patient box) - 62mm (totals/sigs) = 181 - topMm - bottomMm
+  const singlePageItemCapacity = Math.max(4, Math.floor((181 - topMm - bottomMm) / 7.5));
+
+  if (items.length <= singlePageItemCapacity) {
     return [items];
   }
 
   // Multi-page invoice:
-  // Page 1 gets up to 14 items without financial breakdown
-  // Subsequent pages get up to 10 items to reserve space for final totals & signatures
-  const pages = [];
-  const PAGE_1_MAX = 14;
-  const SUBSEQUENT_PAGE_MAX = 10;
+  // Page 1 gets more items (doesn't have financial summary totals & signature block)
+  const page1Capacity = Math.max(5, Math.floor((215 - topMm) / 7.5));
+  // Subsequent pages reserve space for final totals & signatures
+  const subsequentCapacity = Math.max(4, Math.floor((175 - bottomMm) / 7.5));
 
+  const pages = [];
   const copy = [...items];
-  pages.push(copy.splice(0, PAGE_1_MAX));
+  pages.push(copy.splice(0, page1Capacity));
 
   while (copy.length > 0) {
-    pages.push(copy.splice(0, SUBSEQUENT_PAGE_MAX));
+    pages.push(copy.splice(0, subsequentCapacity));
   }
 
   return pages;
@@ -64,7 +67,7 @@ export default function InvoiceTemplate({
     regNumber: 'Reg No - 430/2022',
     address: 'MAIN ROAD NETAJI CHOWK SAHARGHAT',
     phone: '',
-    email: '',
+    email: 'rajjanchghar@gmail.com',
     gstin: '',
     state: 'Bihar',
     stateCode: '10'
@@ -80,7 +83,7 @@ export default function InvoiceTemplate({
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(upiLink)}`;
 
   const items = bill.items || [];
-  const itemPages = paginateInvoiceItems(items);
+  const itemPages = paginateInvoiceItems(items, topMm, bottomMm);
   const totalPages = itemPages.length;
 
   return (
@@ -103,8 +106,8 @@ export default function InvoiceTemplate({
               height: '297mm',
               minHeight: '297mm',
               maxHeight: '297mm',
-              paddingTop: showLetterhead ? '12mm' : `${topMm}mm`,
-              paddingBottom: showLetterhead ? '12mm' : `${bottomMm}mm`,
+              paddingTop: '10mm',
+              paddingBottom: `${Math.max(10, bottomMm)}mm`,
               paddingLeft: '14mm',
               paddingRight: '14mm',
               boxSizing: 'border-box',
@@ -112,12 +115,15 @@ export default function InvoiceTemplate({
             }}
           >
             <div>
-              {/* Top Header */}
-              {showLetterhead && (
-                <header className="border-b-2 border-blue-600 pb-2.5 mb-3 select-none">
+              {/* Top Header / Letterhead */}
+              {showLetterhead ? (
+                <header
+                  className="w-full shrink-0 border-b-2 border-blue-600 pb-2 mb-3 select-none flex flex-col justify-between"
+                  style={{ minHeight: `${topMm}mm` }}
+                >
                   <table className="w-full border-collapse">
                     <tbody>
-                      <tr>
+                      <tr className="align-top">
                         <td className="text-left align-top">
                           <div className="flex items-center space-x-2">
                             <span className="text-blue-800 font-black text-2xl tracking-tight uppercase leading-none">
@@ -155,6 +161,24 @@ export default function InvoiceTemplate({
                     </tbody>
                   </table>
                 </header>
+              ) : (
+                /* Reserved Letterhead Spacer for Pre-printed Stationery */
+                <div className="w-full shrink-0 select-none mb-3">
+                  <div style={{ height: `${topMm}mm` }} />
+                  <div className="flex items-center justify-between pb-2 border-b-2 border-blue-600">
+                    <span className="inline-block bg-blue-700 text-white font-bold text-xs px-2.5 py-1 rounded tracking-wider uppercase leading-none">
+                      {bill.isGstBill ? 'TAX INVOICE' : 'DIAGNOSTIC BILL / RECEIPT'}
+                    </span>
+                    <div className="text-right">
+                      <span className="text-sm font-black text-slate-900 mr-3">
+                        {bill.invoiceNumber}
+                      </span>
+                      <span className="text-[11px] text-slate-500">
+                        Date: {new Date(bill.createdAt || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               )}
 
               {/* Patient & Invoice Meta Box */}
@@ -441,7 +465,9 @@ export default function InvoiceTemplate({
                 <tbody>
                   <tr>
                     <td className="text-left align-bottom leading-tight">
-                      <span className="text-[9px] text-slate-400">Generated by {clinic.clinicName || 'Zen Clinic'} ERP</span>
+                      <span className="text-[9px] text-slate-400">
+                        Generated by {clinic.clinicName || 'RAJ JANCH GHAR'} ERP • Email: {clinic.email || 'rajjanchghar@gmail.com'}
+                      </span>
                       {totalPages > 1 && (
                         <span className="text-[10px] text-slate-600 font-bold ml-3">
                           Page {pIdx + 1} of {totalPages}
@@ -451,7 +477,7 @@ export default function InvoiceTemplate({
                     <td className="text-right align-bottom leading-tight w-[200px]">
                       <div className="w-40 border-b border-slate-400 pb-5 mb-1 ml-auto"></div>
                       <span className="font-bold text-slate-900 block text-[11px] leading-tight">Authorized Signatory / Cashier</span>
-                      <div className="text-[9px] text-slate-500 leading-tight">{clinic.clinicName || 'Zen Clinic'}</div>
+                      <div className="text-[9px] text-slate-500 leading-tight">{clinic.clinicName || 'RAJ JANCH GHAR'}</div>
                     </td>
                   </tr>
                 </tbody>

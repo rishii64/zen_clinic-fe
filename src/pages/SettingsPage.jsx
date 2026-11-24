@@ -135,6 +135,17 @@ export default function SettingsPage() {
             </div>
 
             <div>
+              <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">Clinic Email Address</label>
+              <input
+                type="email"
+                value={formData.email || ''}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="rajjanchghar@gmail.com"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              />
+            </div>
+
+            <div>
               <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">Watermark Text</label>
               <input
                 type="text"

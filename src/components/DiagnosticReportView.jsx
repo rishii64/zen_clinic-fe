@@ -3,18 +3,20 @@ import ReportLetterhead from './ReportLetterhead';
 import { SPECIMEN_TYPES, STANDARD_METHODS } from '../data/reportTemplates';
 
 // Smart test pagination helper to guarantee zero row slicing across pages
-function paginateTests(tests) {
+function paginateTests(tests, topMm = 40, bottomMm = 16) {
   if (!tests || tests.length === 0) return [[]];
 
   const calcRowHeight = 26;
   const calcTestChromeHeight = (t) => 34 + 26 + (t.impression ? 24 : 0) + 12;
 
-  // Single page capacity (with full header, patient card, impression & signatures): ~520px
-  const SINGLE_PAGE_CAPACITY = 520;
-  // Multi-page capacities
-  const PAGE_1_CAPACITY = 620;
-  const MIDDLE_PAGE_CAPACITY = 680;
-  const FINAL_PAGE_CAPACITY = 500;
+  const topPx = Math.round(topMm * 3.7795);
+  const bottomPx = Math.round(bottomMm * 3.7795);
+
+  // Dynamic capacities tailored to configured letterhead dimensions (Total A4: 1123px)
+  const SINGLE_PAGE_CAPACITY = Math.max(280, 818 - topPx - bottomPx);
+  const PAGE_1_CAPACITY = Math.max(350, 960 - topPx - bottomPx);
+  const MIDDLE_PAGE_CAPACITY = Math.max(400, 1030 - topPx - bottomPx);
+  const FINAL_PAGE_CAPACITY = Math.max(300, 890 - topPx - bottomPx);
 
   const totalHeight = tests.reduce((sum, t) => {
     return sum + calcTestChromeHeight(t) + ((t.results || []).length * calcRowHeight);
@@ -90,8 +92,18 @@ function paginateTests(tests) {
   return pages;
 }
 
-export default function DiagnosticReportView({ report, clinicConfig, showLetterhead = true }) {
+export default function DiagnosticReportView({
+  report,
+  clinicConfig,
+  showLetterhead = true,
+  letterheadTopMm,
+  letterheadBottomMm
+}) {
   if (!report) return null;
+
+  // Resolve configured letterhead heights (fallback to clinicConfig or standards)
+  const topMm = Number(letterheadTopMm || clinicConfig?.letterheadTopHeight || 40);
+  const bottomMm = Number(letterheadBottomMm || clinicConfig?.letterheadBottomHeight || 16);
 
   const patient = report.patientSnapshot || {};
   const tests = report.tests || [];
@@ -183,7 +195,7 @@ export default function DiagnosticReportView({ report, clinicConfig, showLetterh
   };
 
   // Divide tests into discrete pages
-  const testPages = paginateTests(tests);
+  const testPages = paginateTests(tests, topMm, bottomMm);
   const totalPages = testPages.length;
 
   return (
@@ -200,6 +212,8 @@ export default function DiagnosticReportView({ report, clinicConfig, showLetterh
             showLetterhead={showLetterhead}
             currentPage={pageIdx + 1}
             totalPages={totalPages}
+            letterheadTopMm={topMm}
+            letterheadBottomMm={bottomMm}
           >
             <div className="text-xs font-sans text-slate-800 w-full flex-1 flex flex-col justify-between">
               

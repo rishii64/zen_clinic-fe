@@ -651,11 +651,13 @@ export default function ReportsPage({ selectedReportFromProps }) {
         documentType="diagnostic_report"
         reportNumber={printReport?.reportNumber}
       >
-        {(showLetterhead) => (
+        {(showLetterhead, printOptions) => (
           <DiagnosticReportView
             report={printReport}
             clinicConfig={clinicConfig}
             showLetterhead={showLetterhead}
+            letterheadTopMm={printOptions?.letterheadTopMm}
+            letterheadBottomMm={printOptions?.letterheadBottomMm}
           />
         )}
       </PrintModal>

@@ -7,7 +7,12 @@ import {
   ZoomOut,
   Maximize2,
   FileCheck,
-  CheckCircle2
+  CheckCircle2,
+  Sliders,
+  ChevronDown,
+  RotateCcw,
+  Settings2,
+  Check
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -27,6 +32,48 @@ export default function PrintModal({
   const [zoom, setZoom] = useState(0.95);
   const [copySuccess, setCopySuccess] = useState(false);
   const printContentRef = useRef(null);
+
+  // Letterhead Height & Margin configuration (persisted to localStorage)
+  const [letterheadTopMm, setLetterheadTopMm] = useState(() => {
+    try {
+      const saved = localStorage.getItem('zenxnic_letterhead_top_mm');
+      return saved ? Number(saved) : 40;
+    } catch (e) {
+      return 40;
+    }
+  });
+
+  const [letterheadBottomMm, setLetterheadBottomMm] = useState(() => {
+    try {
+      const saved = localStorage.getItem('zenxnic_letterhead_bottom_mm');
+      return saved ? Number(saved) : 16;
+    } catch (e) {
+      return 16;
+    }
+  });
+
+  const [showSpacingMenu, setShowSpacingMenu] = useState(false);
+
+  const updateTopMm = (val) => {
+    const clamped = Math.max(20, Math.min(80, Math.round(val)));
+    setLetterheadTopMm(clamped);
+    try {
+      localStorage.setItem('zenxnic_letterhead_top_mm', clamped);
+    } catch (e) {}
+  };
+
+  const updateBottomMm = (val) => {
+    const clamped = Math.max(8, Math.min(50, Math.round(val)));
+    setLetterheadBottomMm(clamped);
+    try {
+      localStorage.setItem('zenxnic_letterhead_bottom_mm', clamped);
+    } catch (e) {}
+  };
+
+  const resetSpacingToDefaults = () => {
+    updateTopMm(40);
+    updateBottomMm(16);
+  };
 
   // Auto-fit initial zoom depending on screen width
   useEffect(() => {
@@ -288,6 +335,208 @@ export default function PrintModal({
                 <strong className="uppercase">{showLetterhead ? 'ON' : 'OFF'}</strong>
               </button>
 
+              {/* Configurable Letterhead Size & Margins Popover */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowSpacingMenu((prev) => !prev)}
+                  className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition border select-none ${
+                    showSpacingMenu
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                      : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
+                  }`}
+                  title="Configure Top Header Height and Bottom Footer Space for Pre-printed Stationery"
+                >
+                  <Sliders className={`w-3.5 h-3.5 ${showSpacingMenu ? 'text-white' : 'text-blue-500'}`} />
+                  <span>Size:</span>
+                  <span className={`font-mono font-bold text-[11px] px-1.5 py-0.5 rounded ${
+                    showSpacingMenu
+                      ? 'bg-blue-700 text-white'
+                      : 'bg-slate-100 dark:bg-slate-700 text-blue-600 dark:text-blue-400'
+                  }`}>
+                    {letterheadTopMm}mm / {letterheadBottomMm}mm
+                  </span>
+                  <ChevronDown className={`w-3 h-3 transition-transform ${showSpacingMenu ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Calibration Dropdown Menu */}
+                {showSpacingMenu && (
+                  <div className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-4 text-xs space-y-3.5 z-50 animate-in fade-in zoom-in-95">
+                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                      <div className="flex items-center space-x-2">
+                        <Settings2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        <span className="font-bold text-slate-900 dark:text-white">Letterhead Size Controls</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowSpacingMenu(false)}
+                        className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    {/* Quick Presets */}
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                        Stationery Quick Presets
+                      </div>
+                      <div className="grid grid-cols-1 gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => { updateTopMm(40); updateBottomMm(16); }}
+                          className={`p-2 rounded-xl text-left border flex items-center justify-between transition ${
+                            letterheadTopMm === 40 && letterheadBottomMm === 16
+                              ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-400 text-blue-900 dark:text-blue-200'
+                              : 'hover:bg-slate-50 dark:hover:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                          }`}
+                        >
+                          <div>
+                            <div className="font-semibold text-[11px]">Digital Standard (40mm / 16mm)</div>
+                            <div className="text-[10px] text-slate-500">Default digital letterhead banner</div>
+                          </div>
+                          {letterheadTopMm === 40 && letterheadBottomMm === 16 && (
+                            <Check className="w-3.5 h-3.5 text-blue-600" />
+                          )}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => { updateTopMm(56); updateBottomMm(28); }}
+                          className={`p-2 rounded-xl text-left border flex items-center justify-between transition ${
+                            letterheadTopMm === 56 && letterheadBottomMm === 28
+                              ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-400 text-emerald-900 dark:text-emerald-200'
+                              : 'hover:bg-slate-50 dark:hover:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                          }`}
+                        >
+                          <div>
+                            <div className="font-semibold text-[11px] text-emerald-700 dark:text-emerald-400">
+                              Pre-printed Paper (56mm / 28mm)
+                            </div>
+                            <div className="text-[10px] text-slate-500">
+                              Clears Dr. R.K. Mandal green wave & bottom footer
+                            </div>
+                          </div>
+                          {letterheadTopMm === 56 && letterheadBottomMm === 28 && (
+                            <Check className="w-3.5 h-3.5 text-emerald-600" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Top Header Height Slider & Stepper */}
+                    <div className="space-y-1.5 pt-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">Top Header / Spacer:</span>
+                        <div className="flex items-center space-x-1.5">
+                          <span className="font-mono font-bold text-blue-600 dark:text-blue-400 text-xs">
+                            {letterheadTopMm} mm
+                          </span>
+                          <span className="text-[10px] text-slate-400">
+                            (≈ {Math.round(letterheadTopMm * 3.78)}px)
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <button
+                          type="button"
+                          onClick={() => updateTopMm(letterheadTopMm - 2)}
+                          className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold text-slate-700 dark:text-slate-200 flex items-center justify-center transition"
+                          title="Decrease 2mm"
+                        >
+                          -
+                        </button>
+                        <input
+                          type="range"
+                          min="20"
+                          max="80"
+                          step="1"
+                          value={letterheadTopMm}
+                          onChange={(e) => updateTopMm(Number(e.target.value))}
+                          className="flex-1 accent-blue-600 cursor-pointer"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => updateTopMm(letterheadTopMm + 2)}
+                          className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold text-slate-700 dark:text-slate-200 flex items-center justify-center transition"
+                          title="Increase 2mm"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Bottom Footer Height Slider & Stepper */}
+                    <div className="space-y-1.5 pt-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">Bottom Footer / Spacer:</span>
+                        <div className="flex items-center space-x-1.5">
+                          <span className="font-mono font-bold text-blue-600 dark:text-blue-400 text-xs">
+                            {letterheadBottomMm} mm
+                          </span>
+                          <span className="text-[10px] text-slate-400">
+                            (≈ {Math.round(letterheadBottomMm * 3.78)}px)
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <button
+                          type="button"
+                          onClick={() => updateBottomMm(letterheadBottomMm - 2)}
+                          className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold text-slate-700 dark:text-slate-200 flex items-center justify-center transition"
+                          title="Decrease 2mm"
+                        >
+                          -
+                        </button>
+                        <input
+                          type="range"
+                          min="8"
+                          max="50"
+                          step="1"
+                          value={letterheadBottomMm}
+                          onChange={(e) => updateBottomMm(Number(e.target.value))}
+                          className="flex-1 accent-blue-600 cursor-pointer"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => updateBottomMm(letterheadBottomMm + 2)}
+                          className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold text-slate-700 dark:text-slate-200 flex items-center justify-center transition"
+                          title="Increase 2mm"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Tip Notice */}
+                    <div className="p-2 bg-blue-50 dark:bg-blue-950/30 rounded-xl text-[10px] text-blue-800 dark:text-blue-300 border border-blue-100 dark:border-blue-900/40 leading-snug">
+                      💡 Adjust Top Header until patient details align cleanly below your paper's printed header wave.
+                    </div>
+
+                    {/* Reset button */}
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                      <button
+                        type="button"
+                        onClick={resetSpacingToDefaults}
+                        className="text-[11px] text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center space-x-1"
+                      >
+                        <RotateCcw className="w-3 h-3" />
+                        <span>Reset Defaults</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowSpacingMenu(false)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs font-semibold shadow-xs"
+                      >
+                        Done
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Native Vector Print Button */}
               <button
                 onClick={handlePrint}
@@ -347,7 +596,14 @@ export default function PrintModal({
                   boxSizing: 'border-box'
                 }}
               >
-                {typeof children === 'function' ? children(showLetterhead) : children}
+                {typeof children === 'function'
+                  ? children(showLetterhead, {
+                      letterheadTopMm,
+                      letterheadBottomMm,
+                      letterheadTopPx: Math.round(letterheadTopMm * 3.78),
+                      letterheadBottomPx: Math.round(letterheadBottomMm * 3.78)
+                    })
+                  : children}
               </div>
             </div>
           </div>

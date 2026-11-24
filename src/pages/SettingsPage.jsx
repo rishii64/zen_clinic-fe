@@ -144,6 +144,32 @@ export default function SettingsPage() {
               />
             </div>
 
+            <div>
+              <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">Default Letterhead Top Height (mm)</label>
+              <input
+                type="number"
+                min="20"
+                max="80"
+                value={formData.letterheadTopHeight || 40}
+                onChange={(e) => setFormData({ ...formData, letterheadTopHeight: Number(e.target.value) })}
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl font-mono text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              />
+              <span className="text-[10px] text-slate-400 mt-0.5 block">Standard digital: 40mm. Pre-printed stationery: 50-60mm.</span>
+            </div>
+
+            <div>
+              <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">Default Letterhead Bottom Height (mm)</label>
+              <input
+                type="number"
+                min="8"
+                max="50"
+                value={formData.letterheadBottomHeight || 16}
+                onChange={(e) => setFormData({ ...formData, letterheadBottomHeight: Number(e.target.value) })}
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl font-mono text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              />
+              <span className="text-[10px] text-slate-400 mt-0.5 block">Standard digital: 16mm. Pre-printed stationery: 20-30mm.</span>
+            </div>
+
             <div className="flex items-center pt-4">
               <label className="flex items-center space-x-2 cursor-pointer select-none">
                 <input

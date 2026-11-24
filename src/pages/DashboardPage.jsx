@@ -432,14 +432,22 @@ export default function DashboardPage({ setActiveTab, onSelectReport, onSelectBi
         documentType={printDoc?.type || 'report'}
         reportNumber={printDoc?.data?.reportNumber || printDoc?.data?.invoiceNumber}
       >
-        {(showLetterhead) => (
+        {(showLetterhead, printOptions) => (
           printDoc?.type === 'bill' ? (
-            <InvoiceTemplate bill={printDoc.data} config={clinicConfig} showLetterhead={showLetterhead} />
+            <InvoiceTemplate
+              bill={printDoc.data}
+              config={clinicConfig}
+              showLetterhead={showLetterhead}
+              letterheadTopMm={printOptions?.letterheadTopMm}
+              letterheadBottomMm={printOptions?.letterheadBottomMm}
+            />
           ) : (
             <DiagnosticReportView
               report={printDoc?.data}
               clinicConfig={clinicConfig}
               showLetterhead={showLetterhead}
+              letterheadTopMm={printOptions?.letterheadTopMm}
+              letterheadBottomMm={printOptions?.letterheadBottomMm}
             />
           )
         )}

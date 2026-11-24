@@ -47,8 +47,17 @@ function paginateInvoiceItems(items) {
   return pages;
 }
 
-export default function InvoiceTemplate({ bill, config, showLetterhead = true }) {
+export default function InvoiceTemplate({
+  bill,
+  config,
+  showLetterhead = true,
+  letterheadTopMm,
+  letterheadBottomMm
+}) {
   if (!bill) return null;
+
+  const topMm = Number(letterheadTopMm || config?.letterheadTopHeight || 40);
+  const bottomMm = Number(letterheadBottomMm || config?.letterheadBottomHeight || 16);
 
   const clinic = config || {
     clinicName: 'RAJ JANCH GHAR',
@@ -94,7 +103,10 @@ export default function InvoiceTemplate({ bill, config, showLetterhead = true })
               height: '297mm',
               minHeight: '297mm',
               maxHeight: '297mm',
-              padding: '12mm 14mm',
+              paddingTop: showLetterhead ? '12mm' : `${topMm}mm`,
+              paddingBottom: showLetterhead ? '12mm' : `${bottomMm}mm`,
+              paddingLeft: '14mm',
+              paddingRight: '14mm',
               boxSizing: 'border-box',
               overflow: 'hidden'
             }}

@@ -6,6 +6,8 @@ export default function ReportLetterhead({
   showLetterhead = true,
   currentPage = 1,
   totalPages = 1,
+  letterheadTopMm = 40,
+  letterheadBottomMm = 16,
   children
 }) {
   const clinic = {
@@ -67,7 +69,7 @@ export default function ReportLetterhead({
     >
       {/* 1. TOP BANNER / HEADER (Authentic Blue & Green Curved Wave Banner matching paper letterhead) */}
       {showLetterhead ? (
-        <header className="w-full shrink-0 relative overflow-hidden select-none" style={{ height: '148px' }}>
+        <header className="w-full shrink-0 relative overflow-hidden select-none" style={{ height: `${letterheadTopMm}mm` }}>
           {/* Authentic SVG Curved Wave Background */}
           <svg
             className="absolute inset-0 w-full h-full"
@@ -182,7 +184,7 @@ export default function ReportLetterhead({
         </header>
       ) : (
         /* Spacer reserved for physical pre-printed letterhead paper */
-        <div className="w-full shrink-0 select-none" style={{ height: '140px' }} />
+        <div className="w-full shrink-0 select-none" style={{ height: `${letterheadTopMm}mm` }} />
       )}
 
       {/* 2. MAIN BODY AREA (Microscope Watermark + Injected Report Content) */}
@@ -223,7 +225,7 @@ export default function ReportLetterhead({
       {showLetterhead ? (
         <footer className="w-full shrink-0 select-none page-break-inside-avoid relative z-10">
           {/* Bottom Integrated Ribbon Banner with Soft Blue & Green Wave */}
-          <div className="relative w-full overflow-hidden" style={{ height: '62px' }}>
+          <div className="relative w-full overflow-hidden" style={{ height: `${letterheadBottomMm}mm` }}>
             {/* Flowing soft blue & green wave background SVG */}
             <svg
               className="absolute inset-0 w-full h-full"
@@ -287,13 +289,16 @@ export default function ReportLetterhead({
           </div>
         </footer>
       ) : (
-        /* Discreet footer when printing on pre-printed stationery paper */
-        <footer className="w-full shrink-0 select-none page-break-inside-avoid relative z-10 px-7 pb-2" style={{ height: '60px' }}>
-          <div className="flex justify-between items-center text-[10px] text-slate-600 pt-2 border-t border-slate-300">
-            <span>{clinic.clinicName}</span>
-            {totalPages > 1 && <span className="font-mono font-bold">Page {currentPage} of {totalPages}</span>}
-            <span className="font-serif italic">pathologist...</span>
-          </div>
+        /* Spacer reserved for physical pre-printed letterhead paper */
+        <footer
+          className="w-full shrink-0 select-none page-break-inside-avoid relative z-10 px-7 flex flex-col justify-start"
+          style={{ height: `${letterheadBottomMm}mm` }}
+        >
+          {totalPages > 1 && (
+            <div className="text-right text-[9px] font-mono font-bold text-slate-500 pt-1">
+              Page {currentPage} of {totalPages}
+            </div>
+          )}
         </footer>
       )}
 

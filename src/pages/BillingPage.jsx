@@ -848,8 +848,14 @@ export default function BillingPage({ preselectedPatient, onGoToReports }) {
         title={`Tax Invoice Receipt: ${printBill?.invoiceNumber}`}
         documentType="invoice"
       >
-        {(showLetterhead) => (
-          <InvoiceTemplate bill={printBill} config={clinicConfig} showLetterhead={showLetterhead} />
+        {(showLetterhead, printOptions) => (
+          <InvoiceTemplate
+            bill={printBill}
+            config={clinicConfig}
+            showLetterhead={showLetterhead}
+            letterheadTopMm={printOptions?.letterheadTopMm}
+            letterheadBottomMm={printOptions?.letterheadBottomMm}
+          />
         )}
       </PrintModal>
 
